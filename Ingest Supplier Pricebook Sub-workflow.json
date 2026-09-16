@@ -1,0 +1,1300 @@
+{
+  "name": "Ingest Supplier Pricebook Sub-workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "{\n  \"run_id\": \"2026-09-15-623\",\n  \n  \"source_file\": \"meridian_pricebook_2026-08.pdf\",\n  \n  \n\"sku\": \n\"MVX400-13400\",\n  \n  \n\"name\": \n\"Vector 400 SFF Desktop\",\n  \n  \n\"brand\": \n\"\",\n  \n  \n\"model\": \n\"MTD-VX400\",\n  \n  \n\"supplier_price\": \n24850,\n  \n  \n\"srp\": \n29995,\n  \n  \n\"markup_pct\": \n0,\n  \n  \n\"short_description\": \n\"Intel Core i5-13400; 8GB DDR4-3200; 512GB NVMe SSD; Windows 11 Pro; 3yr carry-in; Weight 6.2 kg\",\n  \n  \n\"specs_json\": \n\"[{\\\"key\\\":\\\"Weight\\\",\\\"value\\\":\\\"6.2 kg\\\"}]\",\n  \n  \n\"supplier_category\": \n\"DESKTOP SYSTEMS – SMALL FORM FACTOR / TOWER / ALL-IN-ONE\",\n  \n  \n\"category\": \n\"PCs\",\n  \n  \n\"stock_qty\": \n\"\",\n  \n  \n\"publish_at\": \n\"\",\n  \n  \n\"approved\": \n\"TRUE\",\n  \n  \n\"confidence\": \n1,\n  \n  \n\"notes\": \n\"\",\n  \n  \n\"needs_attention\": \nfalse,\n  \n  \n\"status\": \n\"pending\",\n\n\"source_id\": \n\"1mcZqxmh0LN3BgsNlOL0HMYoXe25d1VS1\"\n  \n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4caa4520-c11e-4407-b9de-c14cd7106a18",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc",
+          "mode": "list",
+          "cachedResultName": "supplier catalog - staging spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1567441722,
+          "mode": "list",
+          "cachedResultName": "Staging",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit#gid=1567441722"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sku": "={{ $json.sku }}",
+            "name": "={{ $json.name }}",
+            "supplier_price": "={{ $json.supplier_price }}",
+            "markup_pct": "={{ $json.markup_pct }}",
+            "short_description": "={{ $json.short_description }}",
+            "specs_json": "={{ $json.specs_json }}",
+            "supplier_category": "={{ $json.supplier_category }}",
+            "stock_qty": "={{ $json.stock_qty }}",
+            "status": "={{ $json.status }}",
+            "confidence": "={{ $json.confidence }}",
+            "approved": "={{ $json.approved }}",
+            "sale_price": "=",
+            "category_ids": "={{ $json.category }}",
+            "publish_at": "={{ $json.publish_at }}",
+            "run_id": "={{ $json.run_id }}",
+            "source_file": "={{ $json.source_file }}",
+            "notes": "={{ $json.notes }}",
+            "brand": "={{ $json.brand }}",
+            "model": "={{ $json.model }}",
+            "srp": "={{ $json.srp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "run_id",
+              "displayName": "run_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_file",
+              "displayName": "source_file",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sku",
+              "displayName": "sku",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "brand",
+              "displayName": "brand",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "model",
+              "displayName": "model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_price",
+              "displayName": "supplier_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "markup_pct",
+              "displayName": "markup_pct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "regular_price",
+              "displayName": "regular_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "srp",
+              "displayName": "srp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sale_price",
+              "displayName": "sale_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "short_description",
+              "displayName": "short_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "specs_json",
+              "displayName": "specs_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_category",
+              "displayName": "supplier_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category_ids",
+              "displayName": "category_ids",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stock_qty",
+              "displayName": "stock_qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_urls",
+              "displayName": "image_urls",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publish_at",
+              "displayName": "publish_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approved",
+              "displayName": "approved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "woo_product_id",
+              "displayName": "woo_product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        -192
+      ],
+      "id": "34b36ca4-2217-4d52-8db5-9693a939102d",
+      "name": "Commit to staging spreadsheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8aRFLCA9F1ddrORx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc",
+          "mode": "list",
+          "cachedResultName": "supplier catalog - staging spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 347919534,
+          "mode": "list",
+          "cachedResultName": "flagged",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit#gid=347919534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "run_id": "={{ $json.run_id }}",
+            "source_file": "={{ $json.source_file }}",
+            "sku": "={{ $json.sku }}",
+            "name": "={{ $json.name }}",
+            "brand": "={{ $json.brand }}",
+            "model": "={{ $json.model }}",
+            "supplier_price": "={{ $json.supplier_price }}",
+            "markup_pct": "={{ $json.markup_pct }}",
+            "short_description": "={{ $json.short_description }}",
+            "specs_json": "={{ $json.specs_json }}",
+            "supplier_category": "={{ $json.supplier_category }}",
+            "stock_qty": "={{ $json.stock_qty }}",
+            "publish_at": "={{ $json.publish_at }}",
+            "approved": "={{ $json.approved }}",
+            "confidence": "={{ $json.confidence }}",
+            "notes": "={{ $json.notes }}",
+            "srp": "={{ $json.srp }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "run_id",
+              "displayName": "run_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_file",
+              "displayName": "source_file",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sku",
+              "displayName": "sku",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "brand",
+              "displayName": "brand",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "model",
+              "displayName": "model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_price",
+              "displayName": "supplier_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "markup_pct",
+              "displayName": "markup_pct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "regular_price",
+              "displayName": "regular_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "srp",
+              "displayName": "srp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sale_price",
+              "displayName": "sale_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "short_description",
+              "displayName": "short_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "specs_json",
+              "displayName": "specs_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_category",
+              "displayName": "supplier_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category_ids",
+              "displayName": "category_ids",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stock_qty",
+              "displayName": "stock_qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_urls",
+              "displayName": "image_urls",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publish_at",
+              "displayName": "publish_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approved",
+              "displayName": "approved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "woo_product_id",
+              "displayName": "woo_product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        752,
+        304
+      ],
+      "id": "15592765-6a86-4fe4-9aa9-2bf10d7cbfa7",
+      "name": "Log product items that needs attention",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8aRFLCA9F1ddrORx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('When Executed by Another Workflow').item.json.source_id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1r6hoVv6BWPxoBC_5i9x6VRbjH49qNgR1",
+          "mode": "list",
+          "cachedResultName": "02-Processing",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1r6hoVv6BWPxoBC_5i9x6VRbjH49qNgR1"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        688,
+        -192
+      ],
+      "id": "8a993843-de8a-4447-8f98-094940149668",
+      "name": "Move file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1GmwYmtMHr5wqIlS",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -192
+      ],
+      "id": "4e3e66c7-332e-475a-9771-f0d9a4743e92",
+      "name": "Aggregate Data"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3dd5df4d-ae5e-40a4-bbbf-7225832541ca",
+              "leftValue": "={{ $('When Executed by Another Workflow').all().every(item => item.json.needs_attention) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        464,
+        160
+      ],
+      "id": "ce634c21-ce38-4fdf-a67d-6e0c253f38a0",
+      "name": "nested if"
+    },
+    {
+      "parameters": {
+        "content": "## Double check if every single product parsed need attention\n\nThe edge case here is if every single product data parsed fails to map required properties or if there are issue with the actual parsing.\n\nUser will get a different type of email message.",
+        "height": 256,
+        "width": 352,
+        "color": "#0F2043"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        16,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "692ca1ea-10cd-43aa-849d-762e1d62c1de",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc",
+          "mode": "list",
+          "cachedResultName": "supplier catalog - staging spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 347919534,
+          "mode": "list",
+          "cachedResultName": "flagged",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit#gid=347919534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "run_id": "={{ $json.run_id }}",
+            "source_file": "={{ $json.source_file }}",
+            "sku": "={{ $json.sku }}",
+            "name": "={{ $json.name }}",
+            "brand": "={{ $json.brand }}",
+            "model": "={{ $json.model }}",
+            "supplier_price": "={{ $json.supplier_price }}",
+            "markup_pct": "={{ $json.markup_pct }}",
+            "short_description": "={{ $json.short_description }}",
+            "specs_json": "={{ $json.specs_json }}",
+            "supplier_category": "={{ $json.supplier_category }}",
+            "stock_qty": "={{ $json.stock_qty }}",
+            "publish_at": "={{ $json.publish_at }}",
+            "approved": "={{ $json.approved }}",
+            "confidence": "={{ $json.confidence }}",
+            "notes": "={{ $json.notes }}",
+            "srp": "={{ $json.srp }}",
+            "category_ids": "={{ $json.category }}",
+            "status": "={{ $json.status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "run_id",
+              "displayName": "run_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "source_file",
+              "displayName": "source_file",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sku",
+              "displayName": "sku",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "brand",
+              "displayName": "brand",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "model",
+              "displayName": "model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_price",
+              "displayName": "supplier_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "markup_pct",
+              "displayName": "markup_pct",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "regular_price",
+              "displayName": "regular_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "srp",
+              "displayName": "srp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sale_price",
+              "displayName": "sale_price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "short_description",
+              "displayName": "short_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "specs_json",
+              "displayName": "specs_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "supplier_category",
+              "displayName": "supplier_category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "category_ids",
+              "displayName": "category_ids",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "stock_qty",
+              "displayName": "stock_qty",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "image_urls",
+              "displayName": "image_urls",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "publish_at",
+              "displayName": "publish_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "action",
+              "displayName": "action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "approved",
+              "displayName": "approved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "woo_product_id",
+              "displayName": "woo_product_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "processed_at",
+              "displayName": "processed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        688,
+        64
+      ],
+      "id": "d03667dc-1adb-418d-bc5b-08b2fd43cc7b",
+      "name": "Log product items that needs attention1",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8aRFLCA9F1ddrORx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        880,
+        64
+      ],
+      "id": "d0a91e7d-f371-4e01-a39b-e0f2b069d538",
+      "name": "Aggregate Data1"
+    },
+    {
+      "parameters": {
+        "sendTo": "jlumanog.own5513@gmail.com",
+        "subject": "=Ready for review: {{ $('When Executed by Another Workflow').all().length }} products have been parsed from {{ $('When Executed by Another Workflow').first().json.source_file }}",
+        "emailType": "text",
+        "message": "=Ready for review: https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit?gid=347919534#gid=347919534\n\nParsed: {{ $('When Executed by Another Workflow').all().length }}\nFlagged: {{ $('When Executed by Another Workflow').all().filter(item => item.json.needs_attention).length }}\n\nSet approved to TRUE on the rows/products that are good to go. They go live as product drafts in 15 minutes.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1072,
+        -192
+      ],
+      "id": "e72d3764-a221-47e5-80dc-bed3f62d07e0",
+      "name": "Notify for review",
+      "webhookId": "b41e40cb-b780-41d1-930f-ecade757649c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RsPKH0OCiyIxDJ5v",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "jlumanog.own5513@gmail.com",
+        "subject": "=URGENT: {{ $('Map items into a clean JSON format').all().length }} product data errors need attention - {{ $('Map items into a clean JSON format').first().json.source_file }}",
+        "emailType": "text",
+        "message": "=https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit?gid=347919534#gid=347919534\n\nParsed: {{ $('Map items into a clean JSON format').all().length }}\nFlagged: {{ $('Map items into a clean JSON format').all().filter(item => item.json.needs_attention).length }}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1088,
+        64
+      ],
+      "id": "4a63f9c2-dcbf-48d7-8bd6-a7eff07f9b56",
+      "name": "Notify that all products parsed need attention",
+      "webhookId": "b41e40cb-b780-41d1-930f-ecade757649c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RsPKH0OCiyIxDJ5v",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c69b823e-e020-4ed5-8010-479dd58d155d",
+              "leftValue": "={{ $json.needs_attention }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        224,
+        0
+      ],
+      "id": "031f0807-98bd-4d37-af56-4aedf7df561e",
+      "name": "Check if product data needs attention"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Commit to staging spreadsheet": {
+      "main": [
+        [
+          {
+            "node": "Move file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Move file": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Data": {
+      "main": [
+        [
+          {
+            "node": "Notify for review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "nested if": {
+      "main": [
+        [
+          {
+            "node": "Log product items that needs attention1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log product items that needs attention",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log product items that needs attention1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Data1": {
+      "main": [
+        [
+          {
+            "node": "Notify that all products parsed need attention",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if product data needs attention": {
+      "main": [
+        [
+          {
+            "node": "Commit to staging spreadsheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "nested if",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Check if product data needs attention",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "13daaca2-45dd-4368-a02b-251b0078a6c7",
+  "meta": {
+    "instanceId": "bd532ff1eff4f847b1006977274c783c9443b05882aafd4269ec5ec9ffb76a97"
+  },
+  "nodeGroups": [],
+  "id": "DE9SREsl1JamuVm0",
+  "tags": []
+}
