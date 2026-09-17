@@ -1,5 +1,5 @@
 {
-  "name": "Ingest Supplier Pricebook Workflow",
+  "name": "Ingest Supplier Docs Workflow",
   "nodes": [
     {
       "parameters": {
@@ -24,8 +24,8 @@
       "type": "n8n-nodes-base.googleDriveTrigger",
       "typeVersion": 1,
       "position": [
-        -192,
-        -160
+        -48,
+        -320
       ],
       "id": "074d2fc1-36f4-4e13-ae3f-d337c25f2003",
       "name": "Google Drive Trigger",
@@ -92,8 +92,8 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
       "position": [
-        208,
-        -160
+        320,
+        -320
       ],
       "id": "de25091b-8c53-41a6-9aca-34cd35f4a864",
       "name": "Switch"
@@ -119,8 +119,8 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        0,
-        -160
+        144,
+        -320
       ],
       "id": "7487542b-46a6-421e-a47f-db11ee177226",
       "name": "Get file metadata",
@@ -140,8 +140,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -208,
-        -512
+        -64,
+        -112
       ],
       "typeVersion": 1,
       "id": "4ff402de-2e17-441d-85c5-14f62d821ac3",
@@ -155,8 +155,8 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        576,
-        0
+        528,
+        -32
       ],
       "id": "70f0807c-8756-4f08-a684-f90a53f66448",
       "name": "pricebook in pdf"
@@ -170,8 +170,8 @@
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        928,
-        -80
+        912,
+        -128
       ],
       "typeVersion": 1,
       "id": "c01628c3-a547-4e16-8f11-9d1e15e364cb",
@@ -184,46 +184,24 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        768,
-        0
+        752,
+        -32
       ],
       "id": "249341cc-37e0-4443-9778-ff2165f76792",
       "name": "Chunk the document content"
     },
     {
       "parameters": {
-        "jsCode": "\nconst slug = s => String(s || '')\n  .toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-|-$/g, '');\n\nconst out = [];\nconst seen = new Set();\n\nfor (const item of $input.all()) {\n  const p = item.json[\"output.products\"] || item.json;\n  const problems = [];\n\n  // SKU: use theirs, else build a stable one\n  let sku = slug(p.sku);\n  if (!sku) sku = slug(`${p.brand || 'GEN'}-${p.model || p.name}`).slice(0, 40);\n  if (!sku) problems.push('no sku');\n\n  // duplicate within this same file\n  if (seen.has(sku)) { problems.push('duplicate in file'); }\n  seen.add(sku);\n\n  const price = typeof p.supplier_price === 'number' ? p.supplier_price : null;\n  if (price === null) problems.push('no price');\n  if (price !== null && price <= 0) problems.push('price is zero or negative');\n\n  const srp = typeof p.srp === 'number' ? p.srp : null;\n  if (srp === null) problems.push('no SRP');\n  if (srp !== null && srp <= 0) problems.push('SRP is zero or negative');\n  \n  if (!p.name) problems.push('no name');\n  if ((p.confidence ?? 0) < 0.6) problems.push('low confidence');\n\n\n\n  out.push({ json: {\n    run_id: item.json['run_id'],\n    source_file: item.json['source_file'],\n    sku,\n    name: String(p.name || '').trim().slice(0, 180),\n    brand: /* p.brand ||  */'',\n    model: p.model || '',\n    supplier_price: price,\n    srp: srp,\n    markup_pct: 0,\n    short_description: p.short_description || '',\n    specs_json: JSON.stringify(p.specs || []),\n    supplier_category: p.supplier_category || '',\n    category: p.category || '',\n    stock_qty: p.stock_qty ?? '',\n    publish_at: '',\n    approved: problems.length > 0 ? 'FALSE' : 'TRUE',\n    confidence: p.confidence ?? 0,\n    notes: problems.join('; '),\n    needs_attention: problems.length > 0,\n    status: 'pending',\n  }});\n}\nreturn out;"
+        "jsCode": "\nconst slug = s => String(s || '')\n  .toUpperCase().replace(/[^A-Z0-9]+/g, '-').replace(/^-|-$/g, '');\n\nconst out = [];\nconst seen = new Set();\n\nfor (const item of $input.all()) {\n  const p = item.json[\"output.products\"] || item.json;\n  const problems = [];\n\n  // SKU: use theirs, else build a stable one\n  let sku = slug(p.sku);\n  if (!sku) sku = slug(`${p.brand || 'GEN'}-${p.model || p.name}`).slice(0, 40);\n  if (!sku) problems.push('no sku');\n\n  // duplicate within this same file\n  if (seen.has(sku)) { problems.push('duplicate in file'); }\n  seen.add(sku);\n\n  const price = typeof p.supplier_price === 'number' ? p.supplier_price : null;\n  if (price === null) problems.push('no price');\n  if (price !== null && price <= 0) problems.push('price is zero or negative');\n\n  const srp = typeof p.srp === 'number' ? p.srp : null;\n  if (srp === null) problems.push('no SRP');\n  if (srp !== null && srp <= 0) problems.push('SRP is zero or negative');\n  \n  if (!p.name) problems.push('no name');\n  if ((p.confidence ?? 0) < 0.6) problems.push('low confidence');\n\n\n\n  out.push({ json: {\n    run_id: item.json['run_id'],\n    source_file: item.json['source_file'],\n    sku,\n    name: String(p.name || '').trim().slice(0, 180),\n    brand: /* p.brand ||  */'',\n    model: p.model || '',\n    supplier_price: price,\n    srp: srp,\n    markup_pct: 0,\n    short_description: p.short_description || '',\n    description: p.description || '',\n    specs_json: JSON.stringify(p.specs || []),\n    supplier_category: p.supplier_category || '',\n    category: p.category || '',\n    stock_qty: p.stock_qty ?? '',\n    publish_at: '',\n    approved: problems.length > 0 ? 'FALSE' : 'TRUE',\n    confidence: p.confidence ?? 0,\n    notes: problems.join('; '),\n    needs_attention: problems.length > 0,\n    status: 'pending',\n  }});\n}\n\n\nreturn out;"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2096,
-        -112
+        2288,
+        -320
       ],
       "id": "363f9b9e-db41-4cc9-a352-b68171f2596e",
       "name": "Map items into a clean JSON format"
-    },
-    {
-      "parameters": {
-        "text": "={{ $json.text }}",
-        "schemaType": "manual",
-        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\":               { \"type\": [\"string\",\"null\"] },\n          \"name\":              { \"type\": [\"string\",\"null\"] },\n          \"brand\":             { \"type\": [\"string\",\"null\"] },\n          \"model\":             { \"type\": [\"string\",\"null\"] },\n          \"supplier_price\":    { \"type\": [\"number\",\"null\"] },\n          \"srp\":               { \"type\": [\"number\",\"null\"] },\n          \"currency\":          { \"type\": [\"string\",\"null\"] },\n          \"uom\":               { \"type\": [\"string\",\"null\"] },\n          \"moq\":               { \"type\": [\"number\",\"null\"] },\n          \"stock_qty\":         { \"type\": [\"number\",\"null\"] },\n          \"short_description\": { \"type\": [\"string\",\"null\"] },\n          \"supplier_category\": { \"type\": [\"string\",\"null\"] },\n          \"effective_date\":    { \"type\": [\"string\",\"null\"] },\n          \"specs\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"key\":   { \"type\": \"string\" },\n                \"value\": { \"type\": \"string\" }\n              },\n              \"required\": [\"key\",\"value\"]\n            }\n          },\n          \"confidence\": { \"type\": \"number\" }\n        },\n        \"required\": [\"name\",\"supplier_price\",\"confidence\"]\n      }\n    }\n  },\n  \"required\": [\"products\"]\n}",
-        "options": {
-          "systemPromptTemplate": "=Your role is to extract product line items from supplier pricebooks, catalogues and quotation sheets.\n\nRules, in order of importance:\n1. Copy values exactly as printed. Never invent, estimate,\n   convert or calculate any value. If a field is not present,\n   return null.\n2. supplier_price and SRP are a plain number. Strip currency symbols\n   and thousands of separators: \"PHP 1,250.00\" becomes 1250.00.\n   If a row shows tiered or bracket pricing, use the lowest\n   quantity tier and note the tiers in short_description.\n3. One object per orderable line item. A product offered in\n   three sizes is three objects.\n4. Ignore page headers and footers, page numbers, terms and\n   conditions, delivery notes, subtotals and grand totals,\n   and any row without a price.\n5. effective_date is the price validity date if the document\n   states one, in YYYY-MM-DD. Otherwise null.\n6. confidence is 0 to 1: how certain you are that this is a\n   genuine product row with very little to no discrepancies from the input_schema/output parser AND that the price belongs to it.\n   Use below 0.6 whenever the table alignment was ambiguous.\n7. Return an empty products array if this text contains no\n   product rows. Do not pad the output.\n8. Find alphanumeric code that you think are less likely to be duplicates and use those for generating SKUs.\n9. Any other alphanumeric code that have duplicates are most likely going to be under Models property/column as they represent a group of closely related products.\n\n\nDo not put anything on the Brand property/column, keep it empty.\nDo not invent or infer quantities or numerical values that aren't factual, use the default value on the input schema. ",
-          "batching": {
-            "batchSize": 3
-          }
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
-      "typeVersion": 1.2,
-      "position": [
-        976,
-        0
-      ],
-      "id": "654efa81-7297-4b0e-aa1d-d20e0f56b1d6",
-      "name": "Extract Product Data from Priecbook / Catalog",
-      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
@@ -261,8 +239,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        1728,
-        -112
+        1888,
+        -320
       ],
       "id": "e193e01f-180b-43f6-be2a-f4a03ba683c1",
       "name": "map run_id and source_file1"
@@ -276,8 +254,8 @@
       "type": "n8n-nodes-base.splitOut",
       "typeVersion": 1,
       "position": [
-        1904,
-        -112
+        2080,
+        -320
       ],
       "id": "ce7f3231-ec50-42a0-a845-97d2f7554242",
       "name": "Split Out1"
@@ -299,7 +277,7 @@
       "typeVersion": 1.3,
       "position": [
         1056,
-        224
+        192
       ],
       "id": "97d33d2a-dcc9-4b66-874e-2f09db348fee",
       "name": "gpt-4.1-mini",
@@ -309,22 +287,6 @@
           "name": "OpenAI account"
         }
       }
-    },
-    {
-      "parameters": {
-        "content": "Simple LLM chain for understanding complex and messy layout/structure of spreadsheets",
-        "height": 224,
-        "width": 324,
-        "color": "#0F2043"
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1312,
-        -528
-      ],
-      "typeVersion": 1,
-      "id": "a8920e2c-8a61-4946-8930-2d86435142ef",
-      "name": "Sticky Note2"
     },
     {
       "parameters": {
@@ -342,8 +304,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        1360,
-        -192
+        1440,
+        -128
       ],
       "id": "1d372c42-68b2-48f6-9532-a72b2e7db626",
       "name": "gpt-4.1-mini1",
@@ -356,58 +318,17 @@
     },
     {
       "parameters": {
-        "promptType": "define",
-        "text": "={{ $json }}",
-        "hasOutputParser": true,
-        "messages": {
-          "messageValues": [
-            {
-              "message": "Your role is to extract product line items from supplier pricebooks, catalogues and quotation sheets.\n\nRules, in order of importance:\n1. Copy values exactly as printed. Never invent, estimate,\n   convert or calculate any value. If a field is not present,\n   return null.\n2. supplier_price and SRP are a plain number. Strip currency symbols\n   and thousands of separators: \"PHP 1,250.00\" becomes 1250.00.\n   If a row shows tiered or bracket pricing, use the lowest\n   quantity tier and note the tiers in short_description.\n3. One object per orderable line item. A product offered in\n   three sizes is three objects.\n4. Ignore page headers and footers, page numbers, terms and\n   conditions, delivery notes, subtotals and grand totals,\n   and any row without a price.\n5. effective_date is the price validity date if the document\n   states one, in YYYY-MM-DD. Otherwise null.\n6. confidence is 0 to 1: how certain you are that this is a\n   genuine product row with very little to no discrepancies from the input_schema/output parser AND that the price belongs to it.\n   Use below 0.6 whenever the table alignment was ambiguous.\n7. Return an empty products array if this text contains no\n   product rows. Do not pad the output.\n8. Find alphanumeric code that you think are less likely to be duplicates and use those for generating SKUs.\n9. Any other alphanumeric code that have duplicates are most likely going to be under Models property/column as they represent a group of closely related products.\n\n\nDo not put anything on the Brand property/column, keep it empty.\n\n\nDo not invent or infer quantities or numerical values that aren't factual, use the default value on the output parser."
-            }
-          ]
-        },
-        "batching": {
-          "batchSize": 10
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.chainLlm",
-      "typeVersion": 1.9,
-      "position": [
-        1360,
-        -416
-      ],
-      "id": "3b4353fc-cc82-4717-8b9f-0a8355728a11",
-      "name": "Layout/Structure Detection Agent",
-      "notesInFlow": false
-    },
-    {
-      "parameters": {
         "schemaType": "manual",
-        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\":               { \"type\": [\"string\",\"null\"] },\n          \"name\":              { \"type\": [\"string\",\"null\"] },\n          \"brand\":             { \"type\": [\"string\",\"null\"] },\n          \"model\":             { \"type\": [\"string\",\"null\"] },\n          \"supplier_price\":    { \"type\": [\"number\",\"null\"] },\n          \"srp\":               { \"type\": [\"number\",\"null\"] },\n          \"currency\":          { \"type\": [\"string\",\"null\"] },\n          \"uom\":               { \"type\": [\"string\",\"null\"] },\n          \"moq\":               { \"type\": [\"number\",\"null\"] },\n          \"stock_qty\":         { \"type\": [\"number\",\"null\"] },\n          \"short_description\": { \"type\": [\"string\",\"null\"] },\n          \"supplier_category\": { \"type\": [\"string\",\"null\"] },\n          \"effective_date\":    { \"type\": [\"string\",\"null\"] },\n          \"specs\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"key\":   { \"type\": \"string\" },\n                \"value\": { \"type\": \"string\" }\n              },\n              \"required\": [\"key\",\"value\"]\n            }\n          },\n          \"confidence\": { \"type\": \"number\" }\n        },\n        \"required\": [\"name\",\"supplier_price\",\"confidence\"]\n      }\n    }\n  },\n  \"required\": [\"products\"]\n}"
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\":               { \"type\": [\"string\",\"null\"] },\n          \"name\":              { \"type\": [\"string\",\"null\"] },\n          \"brand\":             { \"type\": [\"string\",\"null\"] },\n          \"model\":             { \"type\": [\"string\",\"null\"] },\n          \"supplier_price\":    { \"type\": [\"number\",\"null\"] },\n          \"srp\":               { \"type\": [\"number\",\"null\"] },\n          \"currency\":          { \"type\": [\"string\",\"null\"] },\n          \"uom\":               { \"type\": [\"string\",\"null\"] },\n          \"moq\":               { \"type\": [\"number\",\"null\"] },\n          \"stock_qty\":         { \"type\": [\"number\",\"null\"] },\n          \"short_description\": { \"type\": [\"string\",\"null\"] },\n          \"description\":       { \"type\": [\"string\",\"null\"] },\n          \"supplier_category\": { \"type\": [\"string\",\"null\"] },\n          \"effective_date\":    { \"type\": [\"string\",\"null\"] },\n          \"specs\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"key\":   { \"type\": \"string\" },\n                \"value\": { \"type\": \"string\" }\n              },\n              \"required\": [\"key\",\"value\"]\n            }\n          },\n          \"confidence\": { \"type\": \"number\" }\n        },\n        \"required\": [\"name\",\"supplier_price\",\"confidence\"]\n      }\n    }\n  },\n  \"required\": [\"products\"]\n}"
       },
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        1520,
-        -192
+        1568,
+        -128
       ],
       "id": "92c87714-a1ee-47e8-b18f-95429f2b7c86",
       "name": "output parser"
-    },
-    {
-      "parameters": {
-        "content": "## reminder\n\nadd the following processes for both routes:\n\n1. filter product items that don't have short descripton\n2. another dedicated LLM chain for generating SEO-friendly short description (1 sentence)instead of the layout agent doing it.\n\n",
-        "height": 192,
-        "width": 656
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        1840,
-        -656
-      ],
-      "typeVersion": 1,
-      "id": "52d60c0c-866e-4560-98b1-8b3d4a2733d4",
-      "name": "Sticky Note4"
     },
     {
       "parameters": {
@@ -431,7 +352,7 @@
             "name": "={{ $json.name }}",
             "brand": "={{ $json.brand }}",
             "model": "={{ $json.model }}",
-            "short_description": "=yet to assign an agent for generating description",
+            "short_description": "={{ $json.short_description }}",
             "specs_json": "={{ $json.specs_json }}",
             "supplier_category": "={{ $json.supplier_category }}",
             "category": "={{ $json.category }}",
@@ -538,6 +459,16 @@
             {
               "id": "short_description",
               "displayName": "short_description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
               "required": false,
               "defaultMatch": false,
               "display": true,
@@ -666,8 +597,8 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
       "position": [
-        2848,
-        -112
+        3056,
+        -320
       ],
       "id": "6726d195-6510-458e-913a-2a1e2c097fc1",
       "name": "Call 'Ingest Supplier Pricebook Sub-workflow'"
@@ -688,8 +619,8 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
       "typeVersion": 1.3,
       "position": [
-        2288,
-        128
+        2544,
+        -128
       ],
       "id": "dcc70c95-0de0-4ed7-98be-3a17be993a13",
       "name": "OpenAI Chat Model",
@@ -702,27 +633,13 @@
     },
     {
       "parameters": {
-        "schemaType": "manual",
-        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"category_id\": { \"type\": [\"string\",\"null\"] }\n  },\n  \"required\": [\"category_id\"]\n}"
-      },
-      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
-      "typeVersion": 1.3,
-      "position": [
-        2464,
-        128
-      ],
-      "id": "1f64f5e0-8d36-4e16-a898-6f730521ac7a",
-      "name": "Structured Output Parser"
-    },
-    {
-      "parameters": {
         "promptType": "define",
         "text": "={{ $json.supplier_category }}",
         "hasOutputParser": true,
         "messages": {
           "messageValues": [
             {
-              "message": "set the category_id by chooosing the following pre-determined categories based on your understanding of the supplier_category or short_description, but remember the spplier_category takes precedence over the short_description. \n\nPre-determined categories:\n1. PCs\n2. Smartphones\n3. Accessories\n4. New Arrival\n\nOnly set the category_id to 'New Arrival' if the product supplier_category/short_description doesn't fit in any of the other categories."
+              "message": "set the category_id by chooosing the following pre-determined categories based on your understanding of the supplier_category or short_description, but remember the spplier_category takes precedence over the short_description. \n\nPre-determined categories:\n1. PCs\n2. Smartphones\n3. Accessories\n4. New Arrivals\n\nOnly set the category_id to 'New Arrival' if the product supplier_category/short_description doesn't fit in any of the other categories."
             }
           ]
         },
@@ -733,8 +650,8 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.9,
       "position": [
-        2288,
-        -112
+        2480,
+        -320
       ],
       "id": "6f36a1e8-a52c-43f0-a253-2139e5a495f9",
       "name": "WooCommerce Category"
@@ -804,6 +721,12 @@
               "type": "string"
             },
             {
+              "id": "56f59720-e576-4b4b-b4c6-8feaaff2935a",
+              "name": "description",
+              "value": "={{ $('Map items into a clean JSON format').item.json.description }}",
+              "type": "string"
+            },
+            {
               "id": "0351e255-af13-4a6d-ab6f-bfa384728eac",
               "name": "specs_json",
               "value": "={{ $('Map items into a clean JSON format').item.json.specs_json }}",
@@ -868,6 +791,12 @@
               "name": "source_id",
               "value": "={{ $('Google Drive Trigger').first().json.id }}",
               "type": "string"
+            },
+            {
+              "id": "b766d39b-96b3-49ec-b3e1-f96a2701a40a",
+              "name": "id",
+              "value": "={{ $('Google Drive Trigger').item.json.id }}",
+              "type": "string"
             }
           ]
         },
@@ -877,8 +806,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        2640,
-        -112
+        2832,
+        -320
       ],
       "id": "88ab3e44-73c6-456c-a2ca-2a75620091f5",
       "name": "Map Out Final JSON output"
@@ -891,8 +820,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        384,
-        -416
+        544,
+        -464
       ],
       "id": "13f73eb9-f3dd-46bb-9b14-fb75ef4ccd2f",
       "name": "Edit Fields"
@@ -908,8 +837,8 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        688,
-        -352
+        768,
+        -368
       ],
       "id": "5d962059-5fb2-4d21-a41b-15325361ca23",
       "name": "Product Data Sheet/Tab"
@@ -926,27 +855,13 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1.1,
       "position": [
-        688,
-        -528
+        768,
+        -560
       ],
       "id": "1eb7e86b-0da4-45f3-98cb-fcac2564b368",
       "name": "Price List Sheet/Tab",
       "alwaysOutputData": false,
       "executeOnce": false
-    },
-    {
-      "parameters": {
-        "jsCode": "// ===== Messy XLSX → LLM-ready tables =====\n// Mode: Run Once for All Items\n// Input: Extract from File (XLSX) — Header Row OFF, RAW Data ON\n\nconst CHUNK_ROWS = 40;        // data rows per LLM call\nconst MAX_CELL_LEN = 280;\nconst HEADER_SCAN_DEPTH = 6;\nconst FILL_DOWN = true;       // repeat values down merged/blank cells\n\nconst HEADER_WORDS = [\n  'sku','code','item','part','model','brand','description','desc','product','name','article',\n  'price','srp','dealer','reseller','net','cost','amount','list','supplier','wholesale',\n  'qty','quantity','stock','on hand','available','moq','min','uom','unit','pack','size','pcs',\n  'category','type','currency','php','usd','date','remarks','notes','spec','specification'\n];\n\nconst colName = (i) => {\n  let s = '', n = i;\n  do { s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n / 26) - 1; } while (n >= 0);\n  return s;\n};\n\nconst clean = (v) => {\n  if (v === null || v === undefined) return null;\n  if (typeof v === 'number') return Number.isFinite(v) ? v : null;\n  if (typeof v === 'boolean') return v;\n  if (v instanceof Date) return v.toISOString().slice(0, 10);\n  let s = String(v)\n    .replace(/[\\u200B-\\u200D\\uFEFF]/g, '')\n    .replace(/\\u00A0/g, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim();\n  if (!s) return null;\n  if (s.length > MAX_CELL_LEN) s = s.slice(0, MAX_CELL_LEN) + '…';\n  return s;\n};\n\n// --- normalize any Extract-from-File shape into an array of cells ---\nconst toRow = (j) => {\n  if (Array.isArray(j)) return { values: j, keys: null };\n  if (j && Array.isArray(j.row)) return { values: j.row, keys: null };\n  const keys = Object.keys(j || {});\n  const idxKeys = keys.filter(k => /^row\\[\\d+\\]$/.test(k));\n  if (idxKeys.length) {\n    const arr = [];\n    for (const k of idxKeys) arr[Number(k.match(/\\d+/)[0])] = j[k];\n    return { values: Array.from(arr, v => (v === undefined ? null : v)), keys: null };\n  }\n  return { values: keys.map(k => j[k]), keys }; // header-row mode fallback\n};\n\nconst isBlank = (r) => r.every(c => c === null);\nconst nonNull = (r) => r.filter(c => c !== null);\n\nconst headerScore = (r) => {\n  const cells = nonNull(r);\n  let hits = 0, nums = 0;\n  for (const c of cells) {\n    if (typeof c === 'number') { nums++; continue; }\n    const s = String(c).toLowerCase();\n    if (HEADER_WORDS.some(w => s.includes(w))) hits++;\n  }\n  const score = hits - nums * 0.5;\n  return { score, ok: hits >= 2 && cells.length >= 2 && nums <= cells.length / 2 };\n};\n\n// ---------- 1. build the grid ----------\nconst input = $input.all();\nlet grid = [];\nlet namedHeaderPushed = false;\n\nfor (const it of input) {\n  const { values, keys } = toRow(it.json ?? {});\n  if (keys && !namedHeaderPushed) { grid.push(keys.map(clean)); namedHeaderPushed = true; }\n  grid.push(values.map(clean));\n}\n\nconst width = grid.reduce((m, r) => Math.max(m, r.length), 0);\ngrid = grid.map(r => { const c = r.slice(); while (c.length < width) c.push(null); return c; });\n\nif (!grid.length || grid.every(isBlank)) {\n  return [{ json: { error: 'EMPTY_SHEET', rows_in: input.length } }];\n}\n\n// ---------- 2. split into blocks ----------\nconst blocks = [];\nlet cur = [], blankRun = 0;\nfor (let i = 0; i < grid.length; i++) {\n  const r = grid[i];\n  if (isBlank(r)) { blankRun++; continue; }\n  if (cur.length && (blankRun >= 2 || (blankRun >= 1 && headerScore(r).ok))) { blocks.push(cur); cur = []; }\n  blankRun = 0;\n  cur.push({ n: i + 1, cells: r });\n}\nif (cur.length) blocks.push(cur);\n\n// ---------- 3. parse each block ----------\nconst out = [];\n\nblocks.forEach((block, bi) => {\n  // header\n  let hIdx = -1, best = 0;\n  for (let i = 0; i < Math.min(HEADER_SCAN_DEPTH, block.length); i++) {\n    const s = headerScore(block[i].cells);\n    if (s.ok && s.score > best) { best = s.score; hIdx = i; }\n  }\n  let headerCells = hIdx >= 0 ? block[hIdx].cells.slice() : null;\n  // merge a stacked second header row\n  if (hIdx >= 0 && block[hIdx + 1] && headerScore(block[hIdx + 1].cells).ok) {\n    const nxt = block[hIdx + 1].cells;\n    headerCells = headerCells.map((c, i) => [c, nxt[i]].filter(Boolean).join(' ') || null);\n    hIdx++;\n  }\n\n  const context = [];\n  const body = [];\n  const start = hIdx >= 0 ? hIdx + 1 : 0;\n\n  for (let i = 0; i < start; i++) if (nonNull(block[i].cells).length === 1) context.push(String(nonNull(block[i].cells)[0]));\n\n  for (let i = start; i < block.length; i++) {\n    const { n, cells } = block[i];\n    const nn = nonNull(cells);\n    if (!nn.length) continue;\n    if (headerCells && headerScore(cells).ok && nn.length >= 2) continue; // repeated print header\n    if (nn.length === 1) { body.push({ n, kind: 'section', text: String(nn[0]) }); continue; }\n    const joined = nn.join(' ').toLowerCase();\n    const kind = /^(grand\\s*)?total\\b|sub\\s*total|^page \\d|prepared by|terms & conditions/.test(joined) ? 'note' : 'data';\n    body.push({ n, kind, cells });\n  }\n\n  // fill down merged / sparse columns\n  if (FILL_DOWN) {\n    const dataRows = body.filter(r => r.kind === 'data');\n    for (let c = 0; c < width; c++) {\n      const filled = dataRows.filter(r => r.cells[c] !== null).length;\n      if (filled === 0 || filled > dataRows.length * 0.4) continue;\n      let last = null;\n      for (const r of dataRows) {\n        if (r.cells[c] !== null) last = r.cells[c];\n        else if (last !== null) r.cells[c] = last;\n      }\n    }\n  }\n\n  const columns = [];\n  for (let c = 0; c < width; c++) {\n    const label = headerCells ? headerCells[c] : null;\n    const used = body.some(r => r.cells && r.cells[c] !== null);\n    if (!label && !used) continue;\n    columns.push({ col: colName(c), index: c, label: label ? String(label) : `col_${colName(c)}` });\n  }\n\n  const dataCount = body.filter(r => r.kind === 'data').length;\n  if (!dataCount) return;\n\n  // ---------- 4. chunk + render ----------\n  let chunk = [], chunks = [];\n  for (const r of body) {\n    chunk.push(r);\n    if (chunk.filter(x => x.kind === 'data').length >= CHUNK_ROWS) { chunks.push(chunk); chunk = []; }\n  }\n  if (chunk.length) chunks.push(chunk);\n\n  chunks.forEach((rows, ci) => {\n    const lines = [];\n    lines.push(`### TABLE ${bi + 1} — part ${ci + 1}/${chunks.length} (spreadsheet rows ${rows[0].n}-${rows[rows.length - 1].n})`);\n    if (context.length) lines.push(`CONTEXT: ${context.join(' | ')}`);\n    lines.push(`HEADER_DETECTED: ${headerCells ? 'yes' : 'no — infer meaning from values'}`);\n    lines.push('COLUMNS:');\n    columns.forEach(c => lines.push(`  ${c.col} = ${c.label}`));\n    lines.push(`DATA (pipe-separated in column order ${columns.map(c => c.col).join(',')}; \"~\" = empty):`);\n    for (const r of rows) {\n      if (r.kind === 'section') { lines.push(`R${r.n} [SECTION] ${r.text}`); continue; }\n      const vals = columns.map(c => (r.cells[c.index] === null ? '~' : String(r.cells[c.index])));\n      lines.push(`R${r.n}${r.kind === 'note' ? ' [NOTE]' : ''} | ${vals.join(' | ')}`);\n    }\n\n    out.push({\n      json: {\n        block: bi + 1,\n        chunk: ci + 1,\n        chunks_total: chunks.length,\n        row_start: rows[0].n,\n        row_end: rows[rows.length - 1].n,\n        data_rows: rows.filter(r => r.kind === 'data').length,\n        context,\n        columns,\n        table: lines.join('\\n'),\n      },\n    });\n  });\n});\n\nreturn out.length ? out : [{ json: { error: 'NO_DATA_ROWS_FOUND', blocks: blocks.length } }];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1056,
-        -816
-      ],
-      "id": "b9ef85b3-c96c-458f-9858-e6cad9836608",
-      "name": "Parse into LLM-readable table format1",
-      "notes": "This is to get an excerpt that's enough to make a preview shape of the layout for the LLM"
     },
     {
       "parameters": {
@@ -958,8 +873,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        944,
-        -416
+        1056,
+        -464
       ],
       "id": "5bec91a2-32f5-4f5f-92d8-4be293104a81",
       "name": "Merge"
@@ -968,16 +883,92 @@
       "parameters": {
         "content": "This may be subject to change depending on the specific tabs/sheets and the range number specified for when the row starts from.",
         "height": 432,
-        "width": 496
+        "width": 528,
+        "color": "#0F2043"
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        576,
-        -624
+        704,
+        -640
       ],
       "typeVersion": 1,
       "id": "12221d88-ed5f-4585-9236-75815df95c78",
       "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const REMOVE_EMPTY = true; // set false to keep items with no products\n\n// mm -> cm, 1 decimal\nconst toCm = (n, isCm) => isCm ? Number(n) : Number((Number(n) / 10).toFixed(1));\n\nfunction parseDimensions(raw) {\n  if (typeof raw !== 'string') return null;\n  const isCm = /\\bcm\\b/i.test(raw);\n\n  const parts = raw\n    .replace(/[\\[\\]]/g, '')      // remove brackets: \"[714, 416-576, 250]\"\n    .replace(/mm|cm/gi, '')      // remove units\n    .split(/\\s*[x,]\\s*/i)        // split on \"x\" or \",\"\n    .map(s => s.trim())\n    .filter(Boolean);\n\n  const result = [];\n  for (const p of parts) {\n    const range = p.match(/^(\\d+(?:\\.\\d+)?)\\s*-\\s*(\\d+(?:\\.\\d+)?)$/);\n    if (range) {\n      result.push({ min: toCm(range[1], isCm), max: toCm(range[2], isCm) });\n    } else if (/^\\d+(\\.\\d+)?$/.test(p)) {\n      result.push(toCm(p, isCm));\n    } else {\n      return null; // not numeric, e.g. \"Adjustable headband\"\n    }\n  }\n  return result.length ? result : null;\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const products = item.json.output?.products ?? [];\n  if (REMOVE_EMPTY && products.length === 0) continue;\n\n  for (const product of products) {\n    for (const spec of product.specs ?? []) {\n      if (!/^dimensions/i.test(spec.key)) continue;\n\n      const parsed = parseDimensions(spec.value);\n      if (parsed) {\n        spec.key = 'Dimensions (WxHxD)'; // normalize key name\n        spec.value = parsed;\n        spec.unit = 'cm';\n      }\n      // if not parseable, the original text is left as-is\n    }\n  }\n  out.push(item);\n}\n\nreturn out;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        -320
+      ],
+      "id": "6624e44d-929a-4c3f-b00e-c7d5ed3a7ad5",
+      "name": "Convert Dimension strings into array of WxHxD"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"category_id\": { \"type\": [\"string\",\"null\"] }\n  },\n  \"required\": [\"category_id\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2672,
+        -128
+      ],
+      "id": "1f64f5e0-8d36-4e16-a898-6f730521ac7a",
+      "name": "Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Your role is to extract product line items from supplier pricebooks, catalogues and quotation sheets.\n\nRules, in order of importance:\n1. Copy values exactly as printed. Never invent, estimate,\n   convert or calculate any value. If a field is not present,\n   return null.\n2. supplier_price and SRP are a plain number. Strip currency symbols\n   and thousands of separators: \"PHP 1,250.00\" becomes 1250.00.\n   If a row shows tiered or bracket pricing, use the lowest\n   quantity tier and note the tiers in short_description.\n3. One object per orderable line item. A product offered in\n   three sizes is three objects.\n4. effective_date is the price validity date if the document\n   states one, in YYYY-MM-DD. Otherwise null.\n5. confidence is 0 to 1: how certain you are that this is a\n   genuine product row with very little to no discrepancies from the input_schema/output parser AND that the price belongs to it.\n   Use below 0.6 whenever the table alignment was ambiguous.\n6. Return an empty products array if this text contains no\n   product rows. Do not pad the output.\n7. Find alphanumeric code that you think are less likely to be duplicates and use those for generating SKUs.\n8. Any other alphanumeric code that have duplicates are most likely going to be under Models property/column as they represent a group of closely related products.\n\nDo not invent or infer quantities or numerical values that aren't factual, use the default value on the output parser.\n\nGenerate a product description that includes an all details of product. Make sure the product descriptions are SEO-Friendly."
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 10
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1376,
+        -320
+      ],
+      "id": "3b4353fc-cc82-4717-8b9f-0a8355728a11",
+      "name": "Product Description",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"products\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"sku\":               { \"type\": [\"string\",\"null\"] },\n          \"name\":              { \"type\": [\"string\",\"null\"] },\n          \"brand\":             { \"type\": [\"string\",\"null\"] },\n          \"model\":             { \"type\": [\"string\",\"null\"] },\n          \"supplier_price\":    { \"type\": [\"number\",\"null\"] },\n          \"srp\":               { \"type\": [\"number\",\"null\"] },\n          \"currency\":          { \"type\": [\"string\",\"null\"] },\n          \"uom\":               { \"type\": [\"string\",\"null\"] },\n          \"moq\":               { \"type\": [\"number\",\"null\"] },\n          \"stock_qty\":         { \"type\": [\"number\",\"null\"] },\n          \"short_description\": { \"type\": [\"string\",\"null\"] },\n          \"supplier_category\": { \"type\": [\"string\",\"null\"] },\n          \"effective_date\":    { \"type\": [\"string\",\"null\"] },\n          \"specs\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"object\",\n              \"properties\": {\n                \"key\":   { \"type\": \"string\" },\n                \"value\": { \"type\": \"string\" }\n              },\n              \"required\": [\"key\",\"value\"]\n            }\n          },\n          \"confidence\": { \"type\": \"number\" }\n        },\n        \"required\": [\"name\",\"supplier_price\",\"confidence\"]\n      }\n    }\n  },\n  \"required\": [\"products\"]\n}",
+        "options": {
+          "systemPromptTemplate": "=Your role is to extract product line items from supplier pricebooks, catalogues and quotation sheets.\n\nRules, in order of importance:\n1. Copy values exactly as printed. Never invent, estimate,\n   convert or calculate any value. If a field is not present,\n   return null.\n2. supplier_price and SRP are a plain number. Strip currency symbols\n   and thousands of separators: \"PHP 1,250.00\" becomes 1250.00.\n   If a row shows tiered or bracket pricing, use the lowest\n   quantity tier and note the tiers in short_description.\n3. One object per orderable line item. A product offered in\n   three sizes is three objects.\n4. Ignore page headers and footers, page numbers, terms and\n   conditions, delivery notes, subtotals and grand totals,\n   and any row without a price.\n5. effective_date is the price validity date if the document\n   states one, in YYYY-MM-DD. Otherwise null.\n6. confidence is 0 to 1: how certain you are that this is a\n   genuine product row with very little to no discrepancies from the input_schema/output parser AND that the price belongs to it.\n   Use below 0.6 whenever the table alignment was ambiguous.\n7. Return an empty products array if this text contains no\n   product rows. Do not pad the output.\n8. Find alphanumeric code that you think are less likely to be duplicates and use those for generating SKUs.\n9. Any other alphanumeric code that have duplicates are most likely going to be under Models property/column as they represent a group of closely related products.\n\nDo not invent or infer quantities or numerical values that aren't factual, use the default value on the output parser.",
+          "batching": {
+            "batchSize": 3
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        976,
+        -32
+      ],
+      "id": "654efa81-7297-4b0e-aa1d-d20e0f56b1d6",
+      "name": "Extract Product Data",
+      "onError": "continueRegularOutput"
     }
   ],
   "pinData": {},
@@ -1037,7 +1028,7 @@
       "main": [
         [
           {
-            "node": "Extract Product Data from Priecbook / Catalog",
+            "node": "Extract Product Data",
             "type": "main",
             "index": 0
           }
@@ -1049,17 +1040,6 @@
         [
           {
             "node": "WooCommerce Category",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Extract Product Data from Priecbook / Catalog": {
-      "main": [
-        [
-          {
-            "node": "map run_id and source_file1",
             "type": "main",
             "index": 0
           }
@@ -1081,7 +1061,7 @@
       "ai_languageModel": [
         [
           {
-            "node": "Extract Product Data from Priecbook / Catalog",
+            "node": "Extract Product Data",
             "type": "ai_languageModel",
             "index": 0
           }
@@ -1103,19 +1083,8 @@
       "ai_languageModel": [
         [
           {
-            "node": "Layout/Structure Detection Agent",
+            "node": "Product Description",
             "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Layout/Structure Detection Agent": {
-      "main": [
-        [
-          {
-            "node": "map run_id and source_file1",
-            "type": "main",
             "index": 0
           }
         ]
@@ -1125,7 +1094,7 @@
       "ai_outputParser": [
         [
           {
-            "node": "Layout/Structure Detection Agent",
+            "node": "Product Description",
             "type": "ai_outputParser",
             "index": 0
           }
@@ -1138,17 +1107,6 @@
           {
             "node": "WooCommerce Category",
             "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Structured Output Parser": {
-      "ai_outputParser": [
-        [
-          {
-            "node": "WooCommerce Category",
-            "type": "ai_outputParser",
             "index": 0
           }
         ]
@@ -1214,16 +1172,55 @@
         ]
       ]
     },
-    "Parse into LLM-readable table format1": {
-      "main": [
-        []
-      ]
-    },
     "Merge": {
       "main": [
         [
           {
-            "node": "Layout/Structure Detection Agent",
+            "node": "Product Description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Dimension strings into array of WxHxD": {
+      "main": [
+        [
+          {
+            "node": "map run_id and source_file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "WooCommerce Category",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Product Description": {
+      "main": [
+        [
+          {
+            "node": "Convert Dimension strings into array of WxHxD",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Product Data": {
+      "main": [
+        [
+          {
+            "node": "Product Description",
             "type": "main",
             "index": 0
           }
@@ -1236,7 +1233,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "6e28aeb7-738d-4747-b50f-beccb1e0e49e",
+  "versionId": "990411ee-822e-41cd-b277-81a5b50c2fa6",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "bd532ff1eff4f847b1006977274c783c9443b05882aafd4269ec5ec9ffb76a97"

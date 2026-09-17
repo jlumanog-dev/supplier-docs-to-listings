@@ -1,23 +1,472 @@
 {
-  "name": "Ingest Supplier Pricebook Sub-workflow",
+  "name": "Staging to WooCommerce Workflow",
   "nodes": [
     {
-      "parameters": {
-        "inputSource": "jsonExample",
-        "jsonExample": "{\n  \"run_id\": \"2026-09-15-623\",\n  \n  \"source_file\": \"meridian_pricebook_2026-08.pdf\",\n  \n  \n\"sku\": \n\"MVX400-13400\",\n  \n  \n\"name\": \n\"Vector 400 SFF Desktop\",\n  \n  \n\"brand\": \n\"\",\n  \n  \n\"model\": \n\"MTD-VX400\",\n  \n  \n\"supplier_price\": \n24850,\n  \n  \n\"srp\": \n29995,\n  \n  \n\"markup_pct\": \n0,\n  \n  \n\"short_description\": \n\"Intel Core i5-13400; 8GB DDR4-3200; 512GB NVMe SSD; Windows 11 Pro; 3yr carry-in; Weight 6.2 kg\",\n\n\"description\": \n\"Intel Core i5-13400; 8GB DDR4-3200; 512GB NVMe SSD; Windows 11 Pro; 3yr carry-in; Weight 6.2 kg long description lorum ipsum\",\n  \n  \n\"specs_json\": \n\"[{\\\"key\\\":\\\"Weight\\\",\\\"value\\\":\\\"6.2 kg\\\"}]\",\n  \n  \n\"supplier_category\": \n\"DESKTOP SYSTEMS – SMALL FORM FACTOR / TOWER / ALL-IN-ONE\",\n  \n  \n\"category\": \n\"PCs\",\n  \n  \n\"stock_qty\": \n\"\",\n  \n  \n\"publish_at\": \n\"\",\n  \n  \n\"approved\": \n\"TRUE\",\n  \n  \n\"confidence\": \n1,\n  \n  \n\"notes\": \n\"\",\n  \n  \n\"needs_attention\": \nfalse,\n  \n  \n\"status\": \n\"pending\",\n\n\"source_id\": \n\"1mcZqxmh0LN3BgsNlOL0HMYoXe25d1VS1\"\n  \n}"
-      },
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "typeVersion": 1.2,
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
       "position": [
-        0,
-        0
+        -128,
+        64
       ],
-      "id": "4caa4520-c11e-4407-b9de-c14cd7106a18",
-      "name": "When Executed by Another Workflow"
+      "id": "3819ae0a-7239-492f-af68-a623cf461b0e",
+      "name": "When clicking ‘Execute workflow’"
     },
     {
       "parameters": {
-        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc",
+          "mode": "list",
+          "cachedResultName": "supplier catalog - staging spreadsheet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1567441722,
+          "mode": "list",
+          "cachedResultName": "Staging",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit#gid=1567441722"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "approved",
+              "lookupValue": "true"
+            },
+            {
+              "lookupColumn": "status",
+              "lookupValue": "pending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        96,
+        64
+      ],
+      "id": "6defba5f-c7c3-49e5-83cc-26b0f22d49b5",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8aRFLCA9F1ddrORx",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Check for approved product data with pending status for idempotency",
+        "height": 240,
+        "width": 384,
+        "color": "#0F2043"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        64,
+        -16
+      ],
+      "typeVersion": 1,
+      "id": "73fc3f09-e55a-438e-b703-ae899c85d73b",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        624,
+        48
+      ],
+      "id": "4e5f8aa5-df21-4de9-aede-149e46c174fd",
+      "name": "Process product entry one at a time"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8bf16a83-11aa-4fda-8a9a-8c4b2e326a10",
+              "leftValue": "={{ $json.sku }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        64
+      ],
+      "id": "41dcfa5e-3213-48e7-b13c-f0a43ffee5bc",
+      "name": "If at least 1 product on staging",
+      "notes": "using sku as condition just in case if it returns an empty json , the workflow would crate an empty draft in WooCommerce."
+    },
+    {
+      "parameters": {
+        "url": "https://jlmng.cloud/wp-json/wc/v3/products",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wooCommerceApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "sku",
+              "value": "={{ $json.sku }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        848,
+        288
+      ],
+      "id": "eda98876-ca66-41e6-ad6f-5d7e9a5655c9",
+      "name": "fetch given SKU",
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "QvRlSx5byXGgfoBQ",
+          "name": "WooCommerce account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d2e3e933-acfb-4796-a7f6-1558b33e1363",
+              "leftValue": "={{ $json.body[0].sku }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1072,
+        272
+      ],
+      "id": "594d7bef-0baa-48aa-b510-e11bda4998bd",
+      "name": "Check response if SKU exists"
+    },
+    {
+      "parameters": {
+        "jsCode": "const r = $('Process product entry one at a time').first().json;\nconst specs = JSON.parse(r.specs_json || '[]');\n\nreturn [{ json: {\n  name: r.name,\n  sku: r.sku,\n  source_id: r.source_id,\n  type: 'simple',\n  status: 'draft',\n  catalog_visibility: 'visible',\n  regular_price: String(r.regular_price),\n  srp: r.srp,\n  short_description: r.short_description || '',\n  description: r.description || '',\n  manage_stock: r.stock_qty !== '' && r.stock_qty !== null,\n  stock_quantity: Number(r.stock_qty) || 0,\n  categories: r.category_ids,\n  attributes: specs.map((s, i) => ({\n    name: s.key, position: i, visible: true,\n    variation: false, options: [s.value],\n  })),\n  meta_data: [\n    { key: '_supplier_cost',  value: String(r.supplier_price) },\n    { key: '_source_file',    value: r.source_file },\n    { key: '_run_id',         value: r.run_id },\n  ],\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        288
+      ],
+      "id": "43c1d05c-4fde-45e6-ac1d-21cb088c7ac2",
+      "name": "Map product data into proper JSON format"
+    },
+    {
+      "parameters": {
+        "name": "={{ $json.name }}",
+        "additionalFields": {
+          "catalogVisibility": "={{ $json.catalog_visibility }}",
+          "categories": "={{ [{ \"PCs\": 17, \"Smartphone\": 36, \"Accessories\": 18, \"Accessories\": 16 }[$json.categories]] }}",
+          "description": "={{ $json.description }}",
+          "manageStock": "={{ $json.manage_stock }}",
+          "regularPrice": "={{ String($json.regular_price.isEmpty() ? $json.srp : $json.regular_price) }}",
+          "shortDescription": "={{ $json.short_description }}",
+          "sku": "={{ $json.sku }}",
+          "status": "={{ $json.status }}",
+          "stockQuantity": "={{ $json.stock_quantity }}",
+          "type": "={{ $json.type }}",
+          "weight": "={{ $json.attributes[8].options[0] }}"
+        },
+        "dimensionsUi": {
+          "dimensionsValues": {
+            "height": "={{ String($json.attributes[7].options[0][1]) }}",
+            "length": "={{ String($json.attributes[7].options[0][2]) }}",
+            "width": "={{ String($json.attributes[7].options[0][0]) }}"
+          }
+        },
+        "imagesUi": {
+          "imagesValues": []
+        },
+        "metadataUi": {
+          "metadataValues": [
+            {
+              "key": "={{ $json.meta_data[0].key }}",
+              "value": "={{ $json.meta_data[0].value }}"
+            },
+            {
+              "key": "={{ $json.meta_data[1].key }}",
+              "value": "={{ $json.meta_data[1].value }}"
+            },
+            {
+              "key": "={{ $json.meta_data[2].key }}",
+              "value": "={{ $json.meta_data[2].value }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.wooCommerce",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        288
+      ],
+      "id": "f753f19f-c61d-403b-a0a9-6691083ec5b8",
+      "name": "Create a product",
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "fbZdCqGvvoOcGPwZ",
+          "name": "WooCommerce API pipeline"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "jlumanog.own5513@gmail.com",
+        "subject": "Product drafts created - ready for review",
+        "emailType": "text",
+        "message": "Check WooCommerce",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        -272
+      ],
+      "id": "2dd687ec-ea57-479c-8c85-041e170b1400",
+      "name": "Send a message",
+      "webhookId": "84a28144-bf96-4518-9a40-10469abcf35d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "RsPKH0OCiyIxDJ5v",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "move",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Map Source ID').item.json.source_id }}",
+          "mode": "id"
+        },
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1bNX-wRXfJxqikvwSMbm1v2kqKEVa8T2c",
+          "mode": "list",
+          "cachedResultName": "03-Done",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1bNX-wRXfJxqikvwSMbm1v2kqKEVa8T2c"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1408,
+        -272
+      ],
+      "id": "9b51e4c6-671c-4e3a-9323-141ee020ff01",
+      "name": "Move file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "1GmwYmtMHr5wqIlS",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "575312c2-28c6-4901-b88e-1a590c8f73b8",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "8d4b5d26-2145-49bf-a97d-7c8605017827",
+              "name": "processed_at",
+              "value": "={{ $json.processed_at }}",
+              "type": "string"
+            },
+            {
+              "id": "922de54f-c91a-4944-91fd-53ce64c1ea65",
+              "name": "source_id",
+              "value": "={{ $('Process product entry one at a time').item.json.source_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        2592,
+        288
+      ],
+      "id": "ef25dd33-78ce-40c0-a48f-082bfca41912",
+      "name": "Map output properties"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a146b2c6-3eaa-432c-b63c-c873d6645c08",
+              "name": "source_id",
+              "value": "={{ $json.source_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        960,
+        -272
+      ],
+      "id": "99e53c40-d133-4adf-bf9b-92a6bc42c6d5",
+      "name": "Map Source ID"
+    },
+    {
+      "parameters": {
+        "jsCode": "const TOL_DOWN = 0.15;   // drops are suspicious\nconst TOL_UP   = 0.40;   // increases are normal business\nconst MIN_PESO = 100;    // ignore noise on cheap items\n\nconst row = $('Process product entry one at a time').first().json;\nlet price = 0;\nif($input.first().json.regular_price){\n  price = parseInt($input.first().json.regular_price)\n}else{\n  price = $input.first().json.srp\n}\nconst existing = parseFloat($('fetch given SKU').first().json.body[0].price || 0);\nconst incoming = price;\n\nconst delta    = incoming - existing;\nconst variance = existing > 0 ? Math.abs(delta) / existing : 0;\nconst dir      = delta < 0 ? 'down' : 'up';\nconst limit    = dir === 'down' ? TOL_DOWN : TOL_UP;\n\nconst blocked  = variance > limit && Math.abs(delta) > MIN_PESO;\n\nreturn [{ json: {\n  ...row,\n  woo_id: $input.first().json.id,\n  existing_price: existing,\n  variance_pct: Math.round(variance * 1000) / 10,\n  direction: dir,\n  blocked,\n  notes: blocked\n    ? `price ${dir} ${Math.round(variance*100)}%: ${existing} → ${incoming}`\n    : row.notes,\n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        32
+      ],
+      "id": "e797a1d4-e353-46d1-a7b6-ea1315847802",
+      "name": "Check for price swing"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "68830a80-5fa3-4a1a-96f3-e95cacfb695e",
+              "leftValue": "={{ $json.blocked }}",
+              "rightValue": 0.25,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1680,
+        32
+      ],
+      "id": "b90039be-fffb-4859-9890-b3227802f9ab",
+      "name": "If price variance is acceptable"
+    },
+    {
+      "parameters": {
+        "content": "Check if the new price has sudden drop of prices which will be subject to manual review",
+        "height": 256,
+        "width": 384,
+        "color": "#0F2043"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1424,
+        -64
+      ],
+      "typeVersion": 1,
+      "id": "c58163ac-0f98-4cbb-9ef0-e3669730d4cd",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Using a composite key values to reference the exact product different from older entries with the same SKU",
+        "height": 96,
+        "width": 368,
+        "color": "#0F2043"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1952,
+        -288
+      ],
+      "typeVersion": 1,
+      "id": "89402306-7a1e-4dbe-bb6a-796cf72228bd",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
         "documentId": {
           "__rl": true,
           "value": "1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc",
@@ -35,31 +484,13 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "sku": "={{ $json.sku }}",
-            "name": "={{ $json.name }}",
-            "supplier_price": "={{ $json.supplier_price }}",
-            "markup_pct": "={{ $json.markup_pct }}",
-            "short_description": "={{ $json.short_description }}",
-            "specs_json": "={{ $json.specs_json }}",
-            "supplier_category": "={{ $json.supplier_category }}",
-            "stock_qty": "={{ $json.stock_qty }}",
-            "status": "={{ $json.status }}",
-            "confidence": "={{ $json.confidence }}",
-            "approved": "={{ $json.approved }}",
-            "sale_price": "=",
-            "category_ids": "={{ $json.category }}",
-            "publish_at": "={{ $json.publish_at }}",
-            "run_id": "={{ $json.run_id }}",
-            "source_file": "={{ $json.source_file }}",
-            "notes": "={{ $json.notes }}",
-            "brand": "={{ $json.brand }}",
-            "model": "={{ $json.model }}",
-            "srp": "={{ $json.srp }}",
-            "source_id": "={{ $json.source_id }}",
-            "description": "={{ $json.description }}",
-            "composite_key": "={{ $json.run_id + \"_\" + $json.sku }}"
+            "row_number": 0,
+            "composite_key": "={{ $json.composite_key }}",
+            "status": "review"
           },
-          "matchingColumns": [],
+          "matchingColumns": [
+            "composite_key"
+          ],
           "schema": [
             {
               "id": "run_id",
@@ -69,7 +500,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "source_file",
@@ -79,7 +510,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "source_id",
@@ -89,7 +520,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "sku",
@@ -99,7 +530,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "name",
@@ -109,7 +540,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "brand",
@@ -119,7 +550,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "model",
@@ -129,7 +560,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "supplier_price",
@@ -340,6 +771,17 @@
               "type": "string",
               "canBeUsedToMatch": true,
               "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
             }
           ],
           "attemptToConvertTypes": false,
@@ -350,11 +792,11 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        496,
-        -192
+        2080,
+        -128
       ],
-      "id": "34b36ca4-2217-4d52-8db5-9693a939102d",
-      "name": "Commit to staging spreadsheet",
+      "id": "12d189d5-edb0-462f-b2af-bf156a775319",
+      "name": "Change status to review",
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "8aRFLCA9F1ddrORx",
@@ -364,203 +806,20 @@
     },
     {
       "parameters": {
-        "operation": "move",
-        "fileId": {
-          "__rl": true,
-          "value": "={{ $('When Executed by Another Workflow').item.json.source_id }}",
-          "mode": "id"
-        },
-        "driveId": {
-          "__rl": true,
-          "mode": "list",
-          "value": "My Drive"
-        },
-        "folderId": {
-          "__rl": true,
-          "value": "1r6hoVv6BWPxoBC_5i9x6VRbjH49qNgR1",
-          "mode": "list",
-          "cachedResultName": "02-Processing",
-          "cachedResultUrl": "https://drive.google.com/drive/folders/1r6hoVv6BWPxoBC_5i9x6VRbjH49qNgR1"
-        }
+        "jsCode": "const r = $('Process product entry one at a time').first().json;\nconst specs = JSON.parse(r.specs_json || '[]');\n\nreturn [{ json: {\n  name: r.name,\n  sku: r.sku,\n  source_id: r.source_id,\n  type: 'simple',\n  status: 'draft',\n  catalog_visibility: 'visible',\n  regular_price: (r.regular_price),\n  srp: r.srp,\n  short_description: r.short_description || '',\n  description: r.description || '',\n  manage_stock: r.stock_qty !== '' && r.stock_qty !== null,\n  stock_quantity: Number(r.stock_qty) || 0,\n  categories: r.category_ids,\n  attributes: specs.map((s, i) => ({\n    name: s.key, position: i, visible: true,\n    variation: false, options: [s.value],\n  })),\n  meta_data: [\n    { key: '_supplier_cost',  value: String(r.supplier_price) },\n    { key: '_source_file',    value: r.source_file },\n    { key: '_run_id',         value: r.run_id },\n  ],\n}}];"
       },
-      "type": "n8n-nodes-base.googleDrive",
-      "typeVersion": 3,
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
       "position": [
-        688,
-        -192
+        1248,
+        32
       ],
-      "id": "8a993843-de8a-4447-8f98-094940149668",
-      "name": "Move file",
-      "credentials": {
-        "googleDriveOAuth2Api": {
-          "id": "1GmwYmtMHr5wqIlS",
-          "name": "Google Drive account"
-        }
-      }
+      "id": "f9be771e-0cd8-47e4-9424-093d5788bcc0",
+      "name": "Map product data into proper JSON format - 2"
     },
     {
       "parameters": {
-        "aggregate": "aggregateAllItemData",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.aggregate",
-      "typeVersion": 1,
-      "position": [
-        880,
-        -192
-      ],
-      "id": "4e3e66c7-332e-475a-9771-f0d9a4743e92",
-      "name": "Aggregate Data"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "3dd5df4d-ae5e-40a4-bbbf-7225832541ca",
-              "leftValue": "={{ $('When Executed by Another Workflow').all().every(item => item.json.needs_attention) }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        464,
-        160
-      ],
-      "id": "ce634c21-ce38-4fdf-a67d-6e0c253f38a0",
-      "name": "nested if"
-    },
-    {
-      "parameters": {
-        "content": "## Double check if every single product parsed need attention\n\nThe edge case here is if every single product data parsed fails to map required properties or if there are issue with the actual parsing.\n\nUser will get a different type of email message.",
-        "height": 256,
-        "width": 352,
-        "color": "#0F2043"
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "position": [
-        16,
-        208
-      ],
-      "typeVersion": 1,
-      "id": "692ca1ea-10cd-43aa-849d-762e1d62c1de",
-      "name": "Sticky Note3"
-    },
-    {
-      "parameters": {
-        "aggregate": "aggregateAllItemData",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.aggregate",
-      "typeVersion": 1,
-      "position": [
-        880,
-        64
-      ],
-      "id": "d0a91e7d-f371-4e01-a39b-e0f2b069d538",
-      "name": "Aggregate Data1"
-    },
-    {
-      "parameters": {
-        "sendTo": "jlumanog.own5513@gmail.com",
-        "subject": "=Ready for review: {{ $('When Executed by Another Workflow').all().length }} products have been parsed from {{ $('When Executed by Another Workflow').first().json.source_file }}",
-        "emailType": "text",
-        "message": "=Ready for review: https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit?gid=347919534#gid=347919534\n\nParsed: {{ $('When Executed by Another Workflow').all().length }}\nFlagged: {{ $('When Executed by Another Workflow').all().filter(item => item.json.needs_attention).length }}\n\nSet approved to TRUE on the rows/products that are good to go. They go live as product drafts in 15 minutes.",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        1072,
-        -192
-      ],
-      "id": "e72d3764-a221-47e5-80dc-bed3f62d07e0",
-      "name": "Notify for review",
-      "webhookId": "b41e40cb-b780-41d1-930f-ecade757649c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "RsPKH0OCiyIxDJ5v",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "sendTo": "jlumanog.own5513@gmail.com",
-        "subject": "=URGENT: {{ $('Map items into a clean JSON format').all().length }} product data errors need attention - {{ $('Map items into a clean JSON format').first().json.source_file }}",
-        "emailType": "text",
-        "message": "=https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit?gid=347919534#gid=347919534\n\nParsed: {{ $('Map items into a clean JSON format').all().length }}\nFlagged: {{ $('Map items into a clean JSON format').all().filter(item => item.json.needs_attention).length }}\n",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.gmail",
-      "typeVersion": 2.2,
-      "position": [
-        1088,
-        64
-      ],
-      "id": "4a63f9c2-dcbf-48d7-8bd6-a7eff07f9b56",
-      "name": "Notify that all products parsed need attention",
-      "webhookId": "b41e40cb-b780-41d1-930f-ecade757649c",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "RsPKH0OCiyIxDJ5v",
-          "name": "Gmail account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 3
-          },
-          "conditions": [
-            {
-              "id": "c69b823e-e020-4ed5-8010-479dd58d155d",
-              "leftValue": "={{ $json.needs_attention }}",
-              "rightValue": "",
-              "operator": {
-                "type": "boolean",
-                "operation": "false",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "or"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.3,
-      "position": [
-        224,
-        0
-      ],
-      "id": "031f0807-98bd-4d37-af56-4aedf7df561e",
-      "name": "Check if product data needs attention"
-    },
-    {
-      "parameters": {
-        "operation": "append",
+        "operation": "update",
         "documentId": {
           "__rl": true,
           "value": "1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc",
@@ -570,37 +829,23 @@
         },
         "sheetName": {
           "__rl": true,
-          "value": 347919534,
+          "value": 1567441722,
           "mode": "list",
-          "cachedResultName": "flagged",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit#gid=347919534"
+          "cachedResultName": "Staging",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit#gid=1567441722"
         },
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "run_id": "={{ $json.run_id }}",
-            "source_file": "={{ $json.source_file }}",
+            "status": "done",
+            "processed_at": "={{ $now.toISO() }}",
             "sku": "={{ $json.sku }}",
-            "name": "={{ $json.name }}",
-            "brand": "={{ $json.brand }}",
-            "model": "={{ $json.model }}",
-            "supplier_price": "={{ $json.supplier_price }}",
-            "markup_pct": "={{ $json.markup_pct }}",
-            "short_description": "={{ $json.short_description }}",
-            "specs_json": "={{ $json.specs_json }}",
-            "supplier_category": "={{ $json.supplier_category }}",
-            "stock_qty": "={{ $json.stock_qty }}",
-            "publish_at": "={{ $json.publish_at }}",
-            "approved": "={{ $json.approved }}",
-            "confidence": "={{ $json.confidence }}",
-            "notes": "={{ $json.notes }}",
-            "srp": "={{ $json.srp }}",
-            "category_ids": "={{ $json.category }}",
-            "status": "={{ $json.status }}",
-            "description": "={{ $json.description }}",
-            "composite_key": "={{ $json.run_id + \"_\" + $json.sku }}"
+            "woo_product_id": "={{ $json.id }}",
+            "composite_key": "={{ $('Process product entry one at a time').item.json.composite_key }}"
           },
-          "matchingColumns": [],
+          "matchingColumns": [
+            "composite_key"
+          ],
           "schema": [
             {
               "id": "run_id",
@@ -610,7 +855,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "source_file",
@@ -620,7 +865,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "source_id",
@@ -630,7 +875,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "sku",
@@ -650,7 +895,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "brand",
@@ -660,7 +905,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "model",
@@ -670,7 +915,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "supplier_price",
@@ -680,7 +925,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "markup_pct",
@@ -690,7 +935,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "regular_price",
@@ -700,7 +945,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "srp",
@@ -710,7 +955,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "sale_price",
@@ -720,7 +965,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "short_description",
@@ -730,7 +975,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "description",
@@ -740,7 +985,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "specs_json",
@@ -750,7 +995,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "supplier_category",
@@ -760,7 +1005,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "category_ids",
@@ -770,7 +1015,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "stock_qty",
@@ -780,7 +1025,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "image_urls",
@@ -790,7 +1035,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "publish_at",
@@ -800,7 +1045,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "action",
@@ -810,7 +1055,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "approved",
@@ -820,7 +1065,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "confidence",
@@ -830,7 +1075,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "notes",
@@ -840,7 +1085,7 @@
               "display": true,
               "type": "string",
               "canBeUsedToMatch": true,
-              "removed": false
+              "removed": true
             },
             {
               "id": "woo_product_id",
@@ -881,6 +1126,17 @@
               "type": "string",
               "canBeUsedToMatch": true,
               "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
             }
           ],
           "attemptToConvertTypes": false,
@@ -891,11 +1147,11 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        688,
-        64
+        2352,
+        288
       ],
-      "id": "d03667dc-1adb-418d-bc5b-08b2fd43cc7b",
-      "name": "Log flagged product items",
+      "id": "3da92d3d-a402-45a5-8477-6fcd7ec183bb",
+      "name": "Set product entry to done",
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "8aRFLCA9F1ddrORx",
@@ -905,7 +1161,6 @@
     },
     {
       "parameters": {
-        "operation": "append",
         "documentId": {
           "__rl": true,
           "value": "1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc",
@@ -915,342 +1170,175 @@
         },
         "sheetName": {
           "__rl": true,
-          "value": 347919534,
+          "value": 1567441722,
           "mode": "list",
-          "cachedResultName": "flagged",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit#gid=347919534"
+          "cachedResultName": "Staging",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1kcOPSUZlUDNzwBNAQC8xx0Y9U-NSPX1BVCiGggqzizc/edit#gid=1567441722"
         },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "run_id": "={{ $json.run_id }}",
-            "source_file": "={{ $json.source_file }}",
-            "sku": "={{ $json.sku }}",
-            "name": "={{ $json.name }}",
-            "brand": "={{ $json.brand }}",
-            "model": "={{ $json.model }}",
-            "supplier_price": "={{ $json.supplier_price }}",
-            "markup_pct": "={{ $json.markup_pct }}",
-            "short_description": "={{ $json.short_description }}",
-            "specs_json": "={{ $json.specs_json }}",
-            "supplier_category": "={{ $json.supplier_category }}",
-            "stock_qty": "={{ $json.stock_qty }}",
-            "publish_at": "={{ $json.publish_at }}",
-            "approved": "={{ $json.approved }}",
-            "confidence": "={{ $json.confidence }}",
-            "notes": "={{ $json.notes }}",
-            "srp": "={{ $json.srp }}",
-            "source_id": "={{ $json.source_id }}",
-            "description": "={{ $json.description }}",
-            "composite_key": "={{ $json.run_id + \"_\" + $json.sku }}"
-          },
-          "matchingColumns": [],
-          "schema": [
+        "filtersUI": {
+          "values": [
             {
-              "id": "run_id",
-              "displayName": "run_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
+              "lookupColumn": "sku",
+              "lookupValue": "={{ $json.sku }}"
             },
             {
-              "id": "source_file",
-              "displayName": "source_file",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "source_id",
-              "displayName": "source_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "sku",
-              "displayName": "sku",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "name",
-              "displayName": "name",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "brand",
-              "displayName": "brand",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "model",
-              "displayName": "model",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "supplier_price",
-              "displayName": "supplier_price",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "markup_pct",
-              "displayName": "markup_pct",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "regular_price",
-              "displayName": "regular_price",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "srp",
-              "displayName": "srp",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "sale_price",
-              "displayName": "sale_price",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "short_description",
-              "displayName": "short_description",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "description",
-              "displayName": "description",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "specs_json",
-              "displayName": "specs_json",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "supplier_category",
-              "displayName": "supplier_category",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "category_ids",
-              "displayName": "category_ids",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "stock_qty",
-              "displayName": "stock_qty",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "image_urls",
-              "displayName": "image_urls",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "publish_at",
-              "displayName": "publish_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "action",
-              "displayName": "action",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "approved",
-              "displayName": "approved",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "confidence",
-              "displayName": "confidence",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "notes",
-              "displayName": "notes",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "woo_product_id",
-              "displayName": "woo_product_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "status",
-              "displayName": "status",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "composite_key",
-              "displayName": "composite_key",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "processed_at",
-              "displayName": "processed_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
+              "lookupColumn": "status",
+              "lookupValue": "done"
             }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
+          ]
         },
         "options": {}
       },
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        752,
-        304
+        1904,
+        48
       ],
-      "id": "15592765-6a86-4fe4-9aa9-2bf10d7cbfa7",
-      "name": "Log flagged product items 2",
+      "id": "01a6874e-2b0e-4414-9d3f-8f8f767ab792",
+      "name": "retrieve a list of the same product that are done",
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "8aRFLCA9F1ddrORx",
           "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "productId": "={{ $input.all().last().json.woo_product_id }}",
+        "updateFields": {
+          "description": "={{ $input.all().last().json.description }}",
+          "regularPrice": "={{ $('If price variance is acceptable').item.json.regular_price ? $('If price variance is acceptable').item.json.regular_price : $('If price variance is acceptable').item.json.srp }}",
+          "shortDescription": "={{ $input.all().last().json.short_description }}"
+        },
+        "dimensionsUi": {
+          "dimensionsValues": {}
+        }
+      },
+      "type": "n8n-nodes-base.wooCommerce",
+      "typeVersion": 1,
+      "position": [
+        2128,
+        48
+      ],
+      "id": "5ac3a0f6-268d-4f48-82dc-afc43cdcdb90",
+      "name": "Update a product price",
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "fbZdCqGvvoOcGPwZ",
+          "name": "WooCommerce API pipeline"
         }
       }
     }
   ],
   "pinData": {},
   "connections": {
-    "Commit to staging spreadsheet": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If at least 1 product on staging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process product entry one at a time": {
+      "main": [
+        [
+          {
+            "node": "Map Source ID",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "fetch given SKU",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If at least 1 product on staging": {
+      "main": [
+        [
+          {
+            "node": "Process product entry one at a time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "fetch given SKU": {
+      "main": [
+        [
+          {
+            "node": "Check response if SKU exists",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Check response if SKU exists": {
+      "main": [
+        [
+          {
+            "node": "Map product data into proper JSON format - 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Map product data into proper JSON format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map product data into proper JSON format": {
+      "main": [
+        [
+          {
+            "node": "Create a product",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a product": {
+      "main": [
+        [
+          {
+            "node": "Set product entry to done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
       "main": [
         [
           {
@@ -1261,91 +1349,106 @@
         ]
       ]
     },
-    "Move file": {
+    "Map output properties": {
       "main": [
         [
           {
-            "node": "Aggregate Data",
+            "node": "Process product entry one at a time",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Aggregate Data": {
+    "Map Source ID": {
       "main": [
         [
           {
-            "node": "Notify for review",
+            "node": "Send a message",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "nested if": {
+    "Check for price swing": {
       "main": [
         [
           {
-            "node": "Log flagged product items",
+            "node": "If price variance is acceptable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If price variance is acceptable": {
+      "main": [
+        [
+          {
+            "node": "Change status to review",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Log flagged product items 2",
+            "node": "retrieve a list of the same product that are done",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Aggregate Data1": {
+    "Change status to review": {
       "main": [
         [
           {
-            "node": "Notify that all products parsed need attention",
+            "node": "Map output properties",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Check if product data needs attention": {
+    "Map product data into proper JSON format - 2": {
       "main": [
         [
           {
-            "node": "Commit to staging spreadsheet",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "nested if",
+            "node": "Check for price swing",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "When Executed by Another Workflow": {
+    "Set product entry to done": {
       "main": [
         [
           {
-            "node": "Check if product data needs attention",
+            "node": "Map output properties",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Log flagged product items": {
+    "retrieve a list of the same product that are done": {
       "main": [
         [
           {
-            "node": "Aggregate Data1",
+            "node": "Update a product price",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a product price": {
+      "main": [
+        [
+          {
+            "node": "Set product entry to done",
             "type": "main",
             "index": 0
           }
@@ -1358,11 +1461,12 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "17315dd0-bad0-4982-a6b4-5d9be9a502d1",
+  "versionId": "8ac11991-d109-4a04-b18b-cc38a6244d50",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "bd532ff1eff4f847b1006977274c783c9443b05882aafd4269ec5ec9ffb76a97"
   },
   "nodeGroups": [],
-  "id": "DE9SREsl1JamuVm0",
+  "id": "1U0zNQOD0wQYqnOD",
   "tags": []
 }
