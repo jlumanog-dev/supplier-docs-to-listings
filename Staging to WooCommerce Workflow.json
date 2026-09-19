@@ -75,6 +75,7 @@
     },
     {
       "parameters": {
+        "batchSize": 20,
         "options": {}
       },
       "type": "n8n-nodes-base.splitInBatches",
@@ -171,7 +172,7 @@
           "conditions": [
             {
               "id": "d2e3e933-acfb-4796-a7f6-1558b33e1363",
-              "leftValue": "={{ $json.body[0].sku }}",
+              "leftValue": "={{ $input.item.json.body[0].sku }}",
               "rightValue": 0,
               "operator": {
                 "type": "string",
@@ -195,7 +196,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const r = $('Process product entry one at a time').first().json;\nconst specs = JSON.parse(r.specs_json || '[]');\n\nreturn [{ json: {\n  name: r.name,\n  sku: r.sku,\n  source_id: r.source_id,\n  type: 'simple',\n  status: 'draft',\n  catalog_visibility: 'visible',\n  regular_price: String(r.regular_price),\n  srp: r.srp,\n  short_description: r.short_description || '',\n  description: r.description || '',\n  manage_stock: r.stock_qty !== '' && r.stock_qty !== null,\n  stock_quantity: Number(r.stock_qty) || 0,\n  categories: r.category_ids,\n  attributes: specs.map((s, i) => ({\n    name: s.key, position: i, visible: true,\n    variation: false, options: [s.value],\n  })),\n  meta_data: [\n    { key: '_supplier_cost',  value: String(r.supplier_price) },\n    { key: '_source_file',    value: r.source_file },\n    { key: '_run_id',         value: r.run_id },\n  ],\n}}];"
+        "jsCode": "const r = $('Process product entry one at a time').all();\n\nconst CATEGORY_MAP = {\n  \"PCs\": 17,\n  \"Accessories\": 18,\n  \"New Arrivals\": 36,\n};\n\nlet returnArray = [];\n\nfor(let item of r){\n  const specs = JSON.parse(item.json.specs_json || '[]');\n  item.json.specs_json = specs.map((s, i) => ({\n    name: s.key, position: i, visible: true,\n    variation: false, options: [s.value],\n  }));\n\n  let category_id = item.json.category_ids == \"PCs\" ? 17 : item.json.category_ids == \"Accessories\" ? 18 : item.json.category_ids == \"New Arrivals\" ? 1 : 1;\n\n  returnArray.push({ json: {\n  name: item.json.name,\n  sku: item.json.sku,\n    composite_key: item.json.composite_key,\n  source_id: item.json.source_id,\n  type: 'simple',\n  status: 'draft',\n  catalog_visibility: 'visible',\n  regular_price: String(item.json.regular_price),\n  srp: item.json.srp,\n  short_description: item.json.short_description || '',\n  description: item.json.description || '',\n  manage_stock: item.json.stock_qty !== '' && item.json.stock_qty !== null,\n  stock_quantity: Number(item.json.stock_qty) || 0,\n  categories: [{ id: category_id }],\n  attributes: specs.map((s, i) => ({\n    name: s.key, position: i, visible: true,\n    variation: false, options: [ s.key === \"Weight (kg)\" ? s.value.toString() : s.key === \"Dimensions (WxHxD)\" ? s.value : s.value.toString()]\n  })),\n  meta_data: [\n    { key: '_supplier_cost',  value: String(item.json.supplier_price) },\n    { key: '_source_file',    value: item.json.source_file },\n    { key: '_run_id',         value: item.json.run_id },\n  ]\n}});\n\n  \n}\nreturn returnArray;\n/* \nreturn [{ json: {\n  name: r.name,\n  sku: r.sku,\n  source_id: r.source_id,\n  type: 'simple',\n  status: 'draft',\n  catalog_visibility: 'visible',\n  regular_price: String(r.regular_price),\n  srp: r.srp,\n  short_description: r.short_description || '',\n  description: r.description || '',\n  manage_stock: r.stock_qty !== '' && r.stock_qty !== null,\n  stock_quantity: Number(r.stock_qty) || 0,\n  categories: r.category_ids,\n  attributes: specs.map((s, i) => ({\n    name: s.key, position: i, visible: true,\n    variation: false, options: [s.value],\n  })),\n  meta_data: [\n    { key: '_supplier_cost',  value: String(r.supplier_price) },\n    { key: '_source_file',    value: r.source_file },\n    { key: '_run_id',         value: r.run_id },\n  ],\n}}]; */"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -205,64 +206,6 @@
       ],
       "id": "43c1d05c-4fde-45e6-ac1d-21cb088c7ac2",
       "name": "Map product data into proper JSON format"
-    },
-    {
-      "parameters": {
-        "name": "={{ $json.name }}",
-        "additionalFields": {
-          "catalogVisibility": "={{ $json.catalog_visibility }}",
-          "categories": "={{ [{ \"PCs\": 17, \"Smartphone\": 36, \"Accessories\": 18, \"Accessories\": 16 }[$json.categories]] }}",
-          "description": "={{ $json.description }}",
-          "manageStock": "={{ $json.manage_stock }}",
-          "regularPrice": "={{ String($json.regular_price.isEmpty() ? $json.srp : $json.regular_price) }}",
-          "shortDescription": "={{ $json.short_description }}",
-          "sku": "={{ $json.sku }}",
-          "status": "={{ $json.status }}",
-          "stockQuantity": "={{ $json.stock_quantity }}",
-          "type": "={{ $json.type }}",
-          "weight": "={{ $json.attributes[8].options[0] }}"
-        },
-        "dimensionsUi": {
-          "dimensionsValues": {
-            "height": "={{ String($json.attributes[7].options[0][1]) }}",
-            "length": "={{ String($json.attributes[7].options[0][2]) }}",
-            "width": "={{ String($json.attributes[7].options[0][0]) }}"
-          }
-        },
-        "imagesUi": {
-          "imagesValues": []
-        },
-        "metadataUi": {
-          "metadataValues": [
-            {
-              "key": "={{ $json.meta_data[0].key }}",
-              "value": "={{ $json.meta_data[0].value }}"
-            },
-            {
-              "key": "={{ $json.meta_data[1].key }}",
-              "value": "={{ $json.meta_data[1].value }}"
-            },
-            {
-              "key": "={{ $json.meta_data[2].key }}",
-              "value": "={{ $json.meta_data[2].value }}"
-            }
-          ]
-        }
-      },
-      "type": "n8n-nodes-base.wooCommerce",
-      "typeVersion": 1,
-      "position": [
-        1600,
-        288
-      ],
-      "id": "f753f19f-c61d-403b-a0a9-6691083ec5b8",
-      "name": "Create a product",
-      "credentials": {
-        "wooCommerceApi": {
-          "id": "fbZdCqGvvoOcGPwZ",
-          "name": "WooCommerce API pipeline"
-        }
-      }
     },
     {
       "parameters": {
@@ -356,8 +299,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.5,
       "position": [
-        2592,
-        288
+        3056,
+        304
       ],
       "id": "ef25dd33-78ce-40c0-a48f-082bfca41912",
       "name": "Map output properties"
@@ -733,16 +676,6 @@
               "removed": false
             },
             {
-              "id": "woo_product_id",
-              "displayName": "woo_product_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
               "id": "status",
               "displayName": "status",
               "required": false,
@@ -839,9 +772,8 @@
           "value": {
             "status": "done",
             "processed_at": "={{ $now.toISO() }}",
-            "sku": "={{ $json.sku }}",
-            "woo_product_id": "={{ $json.id }}",
-            "composite_key": "={{ $('Process product entry one at a time').item.json.composite_key }}"
+            "sku": "={{ $('Check proper JSON').item.json.output.sku }}",
+            "composite_key": "={{ $('Check proper JSON').item.json.output.composite_key }}"
           },
           "matchingColumns": [
             "composite_key"
@@ -1088,16 +1020,6 @@
               "removed": true
             },
             {
-              "id": "woo_product_id",
-              "displayName": "woo_product_id",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
               "id": "status",
               "displayName": "status",
               "required": false,
@@ -1147,7 +1069,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        2352,
+        2720,
         288
       ],
       "id": "3da92d3d-a402-45a5-8477-6fcd7ec183bb",
@@ -1206,16 +1128,17 @@
     },
     {
       "parameters": {
+        "resource": "product",
         "operation": "update",
         "productId": "={{ $input.all().last().json.woo_product_id }}",
         "updateFields": {
           "description": "={{ $input.all().last().json.description }}",
-          "regularPrice": "={{ $('If price variance is acceptable').item.json.regular_price ? $('If price variance is acceptable').item.json.regular_price : $('If price variance is acceptable').item.json.srp }}",
+          "regularPrice": "={{ $('If price variance is acceptable').item.json.regular_price ? parseInt($('If price variance is acceptable').item.json.regular_price) : parseInt($('If price variance is acceptable').item.json.srp) }}",
           "shortDescription": "={{ $input.all().last().json.short_description }}"
         },
-        "dimensionsUi": {
-          "dimensionsValues": {}
-        }
+        "dimensionsUi": {},
+        "imagesUi": {},
+        "metadataUi": {}
       },
       "type": "n8n-nodes-base.wooCommerce",
       "typeVersion": 1,
@@ -1231,6 +1154,325 @@
           "name": "WooCommerce API pipeline"
         }
       }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2432,
+        288
+      ],
+      "id": "a34e53d9-7a68-4b06-9d57-e2d229c3e541",
+      "name": "Wait",
+      "webhookId": "e19cc969-40b8-4a97-9730-d08f6d8c42cc"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://jlmng.cloud/wp-json/wc/v3/products",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "wooCommerceApi",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "=Catalog Visibility",
+              "value": "={{ $json.output.catalog_visibility }}"
+            },
+            {
+              "name": "categories",
+              "value": "={{ $json.output.categories }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.output.description }}"
+            },
+            {
+              "name": "manage_stock",
+              "value": "={{ $json.output.manage_stock }}"
+            },
+            {
+              "name": "regular_price",
+              "value": "={{ $json.output.regular_price.toString() }}"
+            },
+            {
+              "name": "short_description",
+              "value": "={{ $json.output.short_description }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.output.status }}"
+            },
+            {
+              "name": "stock_quantity",
+              "value": "={{ $json.output.stock_quantity }}"
+            },
+            {
+              "name": "name",
+              "value": "={{ $json.output.name }}"
+            },
+            {
+              "name": "type",
+              "value": "={{ $json.output.type }}"
+            },
+            {
+              "name": "weight",
+              "value": "={{ $json.output.weight }}"
+            },
+            {
+              "name": "dimensions",
+              "value": "={{ $json.output.dimensions }}"
+            },
+            {
+              "name": "sku",
+              "value": "={{ $json.output.sku }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2176,
+        288
+      ],
+      "id": "d90ec9d9-94d8-4456-a8b5-11da03686f4e",
+      "name": "HTTP Request",
+      "alwaysOutputData": true,
+      "credentials": {
+        "wooCommerceApi": {
+          "id": "fbZdCqGvvoOcGPwZ",
+          "name": "WooCommerce API pipeline"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "sku",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        288
+      ],
+      "id": "0bf6cb4b-1036-480b-b9af-be460f4a08bf",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7331d473-3596-4a66-aae1-3102d05ef2ac",
+              "name": "cataglog_visibility",
+              "value": "={{ $json.catalog_visibility }}",
+              "type": "string"
+            },
+            {
+              "id": "6484ac1c-798b-40ab-8a9f-8ca6ffc8bf2f",
+              "name": "categories",
+              "value": "={{ $json.categories }}",
+              "type": "array"
+            },
+            {
+              "id": "063a594d-292a-4b1b-9fbc-7db32b93fc4d",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "f40543d9-6280-4b59-b4de-8d78e55aea1f",
+              "name": "manage_stock",
+              "value": "={{ $json.manage_stock }}",
+              "type": "boolean"
+            },
+            {
+              "id": "8465ca6e-a773-4472-9bc8-5ced538d4f15",
+              "name": "regular_price",
+              "value": "={{ $json.regular_price.isEmpty() ? $json.srp : $json.regular_price}}",
+              "type": "string"
+            },
+            {
+              "id": "1a28c8f3-8c80-4321-94e1-4ba26e65d2f4",
+              "name": "short_description",
+              "value": "={{ $json.short_description }}",
+              "type": "string"
+            },
+            {
+              "id": "c30a9512-aa41-4b9d-a562-ad157b7fa4b9",
+              "name": "sku",
+              "value": "={{ $json.sku }}",
+              "type": "string"
+            },
+            {
+              "id": "b0d66f35-32c9-44a6-8132-7223eb67dcbb",
+              "name": "status",
+              "value": "draft",
+              "type": "string"
+            },
+            {
+              "id": "ccf5259f-81d7-4e77-80d2-990f529cd848",
+              "name": "stock_quantity",
+              "value": "={{ $json.stock_quantity }}",
+              "type": "number"
+            },
+            {
+              "id": "fbee60d0-164a-4320-930b-ff030144cc04",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "0f79c593-a77a-4809-b7ce-f908ec7c7565",
+              "name": "source_id",
+              "value": "={{ $json.source_id }}",
+              "type": "string"
+            },
+            {
+              "id": "70be6230-7b1e-4c2c-8445-bb7388dc5139",
+              "name": "type",
+              "value": "={{ $json.type }}",
+              "type": "string"
+            },
+            {
+              "id": "74aaec2b-565e-4547-83c5-1f227deff852",
+              "name": "attributes",
+              "value": "={{ $json.attributes }}",
+              "type": "array"
+            },
+            {
+              "id": "89496b19-a07f-41d2-9c5a-fac747555386",
+              "name": "meta_data",
+              "value": "={{ $json.meta_data }}",
+              "type": "array"
+            },
+            {
+              "id": "d712da13-bb4e-4121-a1cd-444bd9e92f63",
+              "name": "dimensions",
+              "value": "={{ $json.attributes[23].options }}",
+              "type": "array"
+            },
+            {
+              "id": "cb3fd007-86fd-4ee9-992b-27e5f44bf223",
+              "name": "composite_key",
+              "value": "={{ $json.composite_key }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1520,
+        288
+      ],
+      "id": "fe9548de-06ed-4854-b7c8-7e7116a1fcba",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        1856,
+        480
+      ],
+      "id": "08a75e6d-0cc1-4866-8ef4-531e2cf07f23",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "EtZxgCOnfo5Cs18p",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"name\": \"NexusPulse ProBook N14 G3 — Core Ultra 5 225U / Intel Graphics / 16GB / 512GB\",\n  \"type\": \"simple\",\n  \"status\": \"draft\",\n  \"catalog_visibility\": \"visible\",\n  \"sku\": \"MTD-NXP-LAP-001\",\n\"composite_key\": \n\"2026-09-18-880_MTD-NXP-LAP-001\",\n  \"regular_price\": \"58995\",\n  \"description\": \"The NexusPulse ProBook N14 G3 is a powerful business laptop...\",\n  \"short_description\": \"14\\\" business laptop, Core Ultra 5 225U, 16GB RAM, 512GB SSD, Windows 11 Pro\",\n  \"categories\": [{ \"id\": 17 }],\n  \"manage_stock\": true,\n  \"stock_quantity\": 73,\n  \"stock_status\": \"instock\",\n  \"weight\": \"1.39\",\n  \"dimensions\": { \"length\": \"31.3\", \"width\": \"22.4\", \"height\": \"1.8\" },\n  \"attributes\": [\n    { \"name\": \"Warranty\", \"position\": 6, \"visible\": true, \"variation\": false, \"options\": [\"3 Years\"] },\n    { \"name\": \"Dimensions (WxHxD)\", \"position\": 23, \"visible\": true, \"variation\": false, \"options\": [\"31.3 x 22.4 x 1.8 cm\"] }\n  ],\n  \"meta_data\": [\n    { \"key\": \"_supplier_cost\", \"value\": \"52701.6\" },\n    { \"key\": \"_source_file\", \"value\": \"Meridian_Technology_Distribution_PH_Pricelist_Sep2026\" },\n    { \"key\": \"_run_id\", \"value\": \"2026-09-18-880\" },\n    { \"key\": \"_source_id\", \"value\": \"1IM8nsO_VaNtebOXhD6S-CBl3WbGRapD_W2ujVGeAh3M\" }\n  ]\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        2000,
+        496
+      ],
+      "id": "0de367a5-191f-417f-b059-cdc0d5cfd918",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2000,
+        672
+      ],
+      "id": "32ef5946-678b-4a20-9b6e-66ccbf659f9f",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "EtZxgCOnfo5Cs18p",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json }}",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Your role is too extract and map data and follow strictly the input schema on the output parser.\n\n\nReturn ONLY valid JSON matching the schema — no markdown, no code fences, no explanation.\n\nOutput example:\n\n{\n  \"name\": \"NexusPulse ProBook N14 G3 — Core Ultra 5 225U / Intel Graphics / 16GB / 512GB\",\n  \"type\": \"simple\",\n  \"status\": \"draft\",\n  \"catalog_visibility\": \"visible\",\n  \"sku\": \"MTD-NXP-LAP-001\",\n\"composite_key\": \n\"2026-09-18-880_MTD-NXP-LAP-001\",\n  \"regular_price\": \"58995\",\n  \"description\": \"The NexusPulse ProBook N14 G3 is a powerful business laptop...\",\n  \"short_description\": \"14\\\" business laptop, Core Ultra 5 225U, 16GB RAM, 512GB SSD, Windows 11 Pro\",\n  \"categories\": [{ \"id\": 17 }],\n  \"manage_stock\": true,\n  \"stock_quantity\": 73,\n  \"stock_status\": \"instock\",\n  \"weight\": \"1.39\",\n  \"dimensions\": { \"length\": \"31.3\", \"width\": \"22.4\", \"height\": \"1.8\" },\n  \"attributes\": [\n    { \"name\": \"Warranty\", \"position\": 6, \"visible\": true, \"variation\": false, \"options\": [\"3 Years\"] },\n    { \"name\": \"Dimensions (WxHxD)\", \"position\": 23, \"visible\": true, \"variation\": false, \"options\": [\"31.3 x 22.4 x 1.8 cm\"] }\n  ],\n  \"meta_data\": [\n    { \"key\": \"_supplier_cost\", \"value\": \"52701.6\" },\n    { \"key\": \"_source_file\", \"value\": \"Meridian_Technology_Distribution_PH_Pricelist_Sep2026\" },\n    { \"key\": \"_run_id\", \"value\": \"2026-09-18-880\" },\n    { \"key\": \"_source_id\", \"value\": \"1IM8nsO_VaNtebOXhD6S-CBl3WbGRapD_W2ujVGeAh3M\" }\n  ]\n}"
+            }
+          ]
+        },
+        "batching": {
+          "batchSize": 20
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1872,
+        288
+      ],
+      "id": "e8d740f5-28c3-43ab-9a2e-a35ca9ebdd29",
+      "name": "Check proper JSON"
     }
   ],
   "pinData": {},
@@ -1320,18 +1562,7 @@
       "main": [
         [
           {
-            "node": "Create a product",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Create a product": {
-      "main": [
-        [
-          {
-            "node": "Set product entry to done",
+            "node": "Edit Fields",
             "type": "main",
             "index": 0
           }
@@ -1454,6 +1685,94 @@
           }
         ]
       ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Set product entry to done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Check proper JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Check proper JSON",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Check proper JSON",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check proper JSON": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -1461,7 +1780,7 @@
     "executionOrder": "v1",
     "binaryMode": "separate"
   },
-  "versionId": "8ac11991-d109-4a04-b18b-cc38a6244d50",
+  "versionId": "c8f868b3-d036-4211-80e2-627fd68421ba",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "bd532ff1eff4f847b1006977274c783c9443b05882aafd4269ec5ec9ffb76a97"
